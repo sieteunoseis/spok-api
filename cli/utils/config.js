@@ -3,7 +3,7 @@
 /**
  * Config utility for the spok-api CLI.
  * Manages multi-server configuration stored at ~/.spok-api/config.json.
- * Falls back to ~/.spok-cli/config.json for backward compatibility.
+ * Stores config at ~/.spok-api/config.json.
  * Supports Secret Server (<ss:ID:field>) placeholder resolution via ss-cli.
  */
 
@@ -21,22 +21,12 @@ const SS_PLACEHOLDER_RE = /<ss:\d+:[^>]+>/;
 
 /**
  * Returns the config directory path.
- * Precedence: SPOK_API_CONFIG_DIR > SPOK_AMCOM_CONFIG_DIR > ~/.spok-api > ~/.spok-cli (fallback)
+ * Precedence: SPOK_API_CONFIG_DIR env var > ~/.spok-api
  * @returns {string}
  */
 function getConfigDir() {
   if (process.env.SPOK_API_CONFIG_DIR) return process.env.SPOK_API_CONFIG_DIR;
-  if (process.env.SPOK_AMCOM_CONFIG_DIR) return process.env.SPOK_AMCOM_CONFIG_DIR;
-
-  const newDir = path.join(os.homedir(), ".spok-api");
-  const oldDir = path.join(os.homedir(), ".spok-cli");
-
-  // Use new dir if it exists, otherwise fall back to old dir if it exists
-  if (fs.existsSync(path.join(newDir, "config.json"))) return newDir;
-  if (fs.existsSync(path.join(oldDir, "config.json"))) return oldDir;
-
-  // Default to new dir for fresh installs
-  return newDir;
+  return path.join(os.homedir(), ".spok-api");
 }
 
 /**
