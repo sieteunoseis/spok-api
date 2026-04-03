@@ -30,12 +30,12 @@ module.exports = function registerGetCommand(program) {
   get
     .command("listing-by-name <name>")
     .description("Search listings by name")
-    .option("--search-type <type>", "S=starts with, C=contains, E=exact", "S")
-    .option("--midflag <flag>", "messaging ID flag: Y, N, or O", "N")
+    .option("--search-type <type>", "BEGINS WITH, CONTAINS, EXACT, ENDS WITH", "BEGINS WITH")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL", "WITHOUT")
     .action(async (name, opts) => {
       try {
         await callAndPrint(program.opts(), "GetListingsByName", {
-          name, search_type: opts.searchType, mid_flag: opts.midflag,
+          name, search_type: opts.searchType.toUpperCase(), mid_flag: opts.midflag.toUpperCase(),
         });
       } catch (err) { printError(err); }
     });
@@ -43,10 +43,10 @@ module.exports = function registerGetCommand(program) {
   get
     .command("listing-by-eid <eid>")
     .description("Get listings by employee ID")
-    .option("--midflag <flag>", "messaging ID flag: Y, N, or O", "N")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL", "WITHOUT")
     .action(async (eid, opts) => {
       try {
-        await callAndPrint(program.opts(), "GetListingsByEid", { eid, mid_flag: opts.midflag });
+        await callAndPrint(program.opts(), "GetListingsByEid", { eid, mid_flag: opts.midflag.toUpperCase() });
       } catch (err) { printError(err); }
     });
 
