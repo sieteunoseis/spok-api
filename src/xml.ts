@@ -69,22 +69,97 @@ function extractParameters(xml: string): Record<string, string> {
 }
 
 /**
+ * Extract top-level child elements from an XML fragment using depth-aware scanning.
+ * Handles same-named nested elements (e.g. <phtype><phtype>X</phtype></phtype>).
+ */
+function extractChildren(xml: string): { tag: string; xml: string }[] {
+  const children: { tag: string; xml: string }[] = [];
+  let pos = 0;
+
+  while (pos < xml.length) {
+    // Find next opening tag
+    const openIdx = xml.indexOf("<", pos);
+    if (openIdx < 0) break;
+
+    // Skip comments, CDATA, processing instructions
+    if (xml.startsWith("<!--", openIdx) || xml.startsWith("<!", openIdx) || xml.startsWith("<?", openIdx)) {
+      pos = openIdx + 1;
+      continue;
+    }
+
+    // Skip closing tags (shouldn't happen at top level, but be safe)
+    if (xml[openIdx + 1] === "/") {
+      pos = openIdx + 1;
+      continue;
+    }
+
+    // Extract tag name
+    const tagEnd = xml.slice(openIdx + 1).search(/[\s/>]/);
+    if (tagEnd < 0) break;
+    const tag = xml.slice(openIdx + 1, openIdx + 1 + tagEnd);
+
+    // Self-closing tag?
+    const closeAngle = xml.indexOf(">", openIdx);
+    if (closeAngle < 0) break;
+    if (xml[closeAngle - 1] === "/") {
+      children.push({ tag, xml: xml.slice(openIdx, closeAngle + 1) });
+      pos = closeAngle + 1;
+      continue;
+    }
+
+    // Find matching close tag with depth tracking
+    let depth = 1;
+    let searchPos = closeAngle + 1;
+    const openPattern = new RegExp(`<${tag}[\\s/>]`, "g");
+    const closePattern = `</${tag}>`;
+
+    while (depth > 0 && searchPos < xml.length) {
+      const nextClose = xml.indexOf(closePattern, searchPos);
+      if (nextClose < 0) break;
+
+      // Count opens between searchPos and nextClose
+      openPattern.lastIndex = searchPos;
+      let m: RegExpExecArray | null;
+      while ((m = openPattern.exec(xml)) !== null && m.index < nextClose) {
+        // Make sure it's not a self-closing tag
+        const ga = xml.indexOf(">", m.index);
+        if (ga >= 0 && xml[ga - 1] !== "/") {
+          depth++;
+        }
+      }
+
+      depth--;
+      if (depth === 0) {
+        const endPos = nextClose + closePattern.length;
+        children.push({ tag, xml: xml.slice(openIdx, endPos) });
+        pos = endPos;
+        break;
+      }
+      searchPos = nextClose + closePattern.length;
+    }
+
+    if (depth > 0) {
+      // Couldn't find matching close, skip this tag
+      pos = closeAngle + 1;
+    }
+  }
+
+  return children;
+}
+
+/**
  * Parse child elements of an XML fragment into an object.
  */
 export function parseChildrenToObject(xml: string): Record<string, any> {
   const result: Record<string, any> = {};
-  const childRegex = /<([^\s/>]+)(?:\s[^>]*)?>[\s\S]*?<\/\1>|<([^\s/>]+)(?:\s[^>]*)?\/>/g;
-  const tagCounts: Record<string, number> = {};
-  const matches: { tag: string; xml: string }[] = [];
-  let m: RegExpExecArray | null;
+  const children = extractChildren(xml);
 
-  while ((m = childRegex.exec(xml)) !== null) {
-    const tag = m[1] || m[2];
+  const tagCounts: Record<string, number> = {};
+  for (const { tag } of children) {
     tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-    matches.push({ tag, xml: m[0] });
   }
 
-  for (const { tag, xml: childXml } of matches) {
+  for (const { tag, xml: childXml } of children) {
     const innerMatch = childXml.match(/^<([^\s/>]+)([^>]*)>([\s\S]*)<\/\1>$/);
     let value: any;
 
@@ -127,16 +202,7 @@ export function parseXmlToObject(xml: string): Record<string, any> | string | nu
 
   const content = rootMatch[3].trim();
 
-  const childTags: string[] = [];
-  const childRegex = /<([^\s/>]+)(?:\s[^>]*)?>[\s\S]*?<\/\1>|<([^\s/>]+)(?:\s[^>]*)?\/>/g;
-  let childMatch: RegExpExecArray | null;
-  const children: string[] = [];
-
-  while ((childMatch = childRegex.exec(content)) !== null) {
-    const tag = childMatch[1] || childMatch[2];
-    childTags.push(tag);
-    children.push(childMatch[0]);
-  }
+  const children = extractChildren(content);
 
   if (children.length === 0) {
     return { [rootMatch[1]]: unescapeXml(content) };
@@ -145,14 +211,11 @@ export function parseXmlToObject(xml: string): Record<string, any> | string | nu
   const result: Record<string, any> = {};
   const tagCounts: Record<string, number> = {};
 
-  for (const tag of childTags) {
+  for (const { tag } of children) {
     tagCounts[tag] = (tagCounts[tag] || 0) + 1;
   }
 
-  for (let i = 0; i < children.length; i++) {
-    const tag = childTags[i];
-    const childXml = children[i];
-
+  for (const { tag, xml: childXml } of children) {
     const innerMatch = childXml.match(/^<([^\s/>]+)([^>]*)>([\s\S]*)<\/\1>$/);
     let value: any;
 
