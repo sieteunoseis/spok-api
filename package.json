@@ -1,0 +1,56 @@
+{
+  "name": "spok-api",
+  "version": "1.0.0",
+  "description": "A library and CLI for Spok SmartSuite TCP API operations",
+  "main": "dist/index.js",
+  "module": "main.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./main.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "spok-api": "./bin/spok-api.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [
+    "spok",
+    "amcom",
+    "smartsuite",
+    "paging",
+    "oncall",
+    "healthcare",
+    "cli"
+  ],
+  "author": "Jeremy Worden",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sieteunoseis/spok-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sieteunoseis/spok-api/issues"
+  },
+  "homepage": "https://github.com/sieteunoseis/spok-api#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "cli-table3": "^0.6.5",
+    "commander": "^14.0.3",
+    "csv-stringify": "^6.7.0",
+    "update-notifier": "^7.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.15",
+    "typescript": "^5.9.3"
+  }
+}
