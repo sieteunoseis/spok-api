@@ -242,6 +242,17 @@ When using spok-api as a CLI tool managed by an AI agent (e.g. Claude Code), you
 | `cos` | Class of Service | Pager routing/protocol class | `LONG_RANGE` |
 | `cog` | Company/Organization Group | Top-level organization identifier | `ACME` |
 
+## Response Behavior
+
+**Read operations** (GET) return the full data payload from the Amcom API.
+
+**Write operations** (POST via CLI: `add`, `update`, `delete`, `assign`, `set`, `send-page`, `change-status`, `datafeed`) return a confirmation response with no data payload:
+
+- **Success**: `err_message` is empty, `data` is empty — the operation completed
+- **Failure**: `err_message` contains the error (typically an Oracle database error)
+
+All responses return HTTP 200 regardless of whether `err_message` is populated. Check `err_message` to determine success or failure.
+
 ## Common Error Messages
 
 The Amcom API passes Oracle database errors through directly. Common ones you may encounter:
