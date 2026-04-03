@@ -225,6 +225,38 @@ When using spok-api as a CLI tool managed by an AI agent (e.g. Claude Code), you
 }
 ```
 
+## Field Reference
+
+| Field | Name | What it is | Example |
+|-------|------|-----------|---------|
+| `lid` | Listing ID | Unique ID for a person record (primary key, auto-assigned on add) | `300001` |
+| `mid` | Messaging ID | ID used for paging/on-call routing — a person can exist without one | `10001` |
+| `eid` | Employee ID | HR employee number (external, from data feed) | `E00001` |
+| `pid` | Pager ID | A specific pager device number or address | `5551234567` |
+| `dirseq` | Directory Sequence | Unique ID for a directory entry (phone number, room, etc.) | `7000001` |
+| `grpnum` | Group Number | Static message group number | `50` |
+| `group_mid` | Group Messaging ID | Messaging ID assigned to an on-call group (same namespace as person MIDs) | `10050` |
+| `ssoun` | SSO Username | Single sign-on username | `jsmith` |
+| `scode` | Status Code | Numeric status code for a listing | `2` |
+| `stext` | Status Text | Freeform status display text (not validated against scode) | `AVAILABLE` |
+| `cos` | Class of Service | Pager routing/protocol class | `LONG_RANGE` |
+| `cog` | Company/Organization Group | Top-level organization identifier | `ACME` |
+
+## Common Error Messages
+
+The Amcom API passes Oracle database errors through directly. Common ones you may encounter:
+
+| Error | Meaning |
+|-------|---------|
+| `ORA-00001: unique constraint (ATMS.XPK_PAGER_ASSIGNMENT) violated` | Pager already assigned to someone |
+| `ORA-00001: unique constraint (ATMS.XPK_PAGER) violated` | Pager ID already exists (on `add pager`) |
+| `ORA-02291: integrity constraint violated - parent key not found` | Referenced record doesn't exist (e.g. assigning a pager that hasn't been added) |
+| `ORA-02292: integrity constraint violated - child record found` | Can't delete — other records reference this one |
+| `ORA-01400: cannot insert NULL` | A required field was missing |
+| `Matching SSO Username was not found` | SSO lookup failed (Amcom-level, not Oracle) |
+| `No exception records found` | No active exceptions — expected behavior, not an error |
+| `No listing found` | No listing matches the search criteria |
+
 ## Protocol Details
 
 The Spok SmartSuite TCP API uses a proprietary binary+XML protocol:
