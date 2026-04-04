@@ -1,0 +1,30 @@
+{
+  "name": "spok-api",
+  "description": "Hooks for Spok SmartSuite CLI",
+  "author": "sieteunoseis",
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "name": "Block write operations",
+      "description": "Blocks send-page, change-status, add, update, delete, assign, set, datafeed",
+      "default": true,
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "hook": {
+        "type": "command",
+        "command": "jq -r '.tool_input.command' | { read -r cmd; if echo \"$cmd\" | grep -qE '^(npx )?spok-api (send-page|change-status|add |update |delete |assign |set |datafeed )'; then echo '{\"decision\":\"block\",\"reason\":\"BLOCKED: spok-api write operation. Get explicit user approval.\"}'; fi; }"
+      }
+    },
+    {
+      "name": "Enforce --read-only flag",
+      "description": "Requires --read-only on every spok-api command",
+      "default": false,
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "hook": {
+        "type": "command",
+        "command": "jq -r '.tool_input.command' | { read -r cmd; if echo \"$cmd\" | grep -qE '^(npx )?spok-api ' && ! echo \"$cmd\" | grep -q '\\-\\-read-only'; then echo '{\"decision\":\"block\",\"reason\":\"BLOCKED: spok-api must be run with --read-only. Retry with the flag.\"}'; fi; }"
+      }
+    }
+  ]
+}
