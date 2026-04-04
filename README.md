@@ -69,18 +69,18 @@ Config stored at `~/.spok-api/config.json` (falls back to `~/.spok-cli/config.js
 
 ## CLI Commands
 
-| Command | Description |
-|---------|-------------|
-| `get <subcommand>` | Query listings, pagers, email, directories, on-call, exceptions, coverage, reference data |
-| `send-page <mid> <text>` | Send a page to a messaging ID |
-| `change-status <mid> <code> <text>` | Change a listing's status |
-| `add <subcommand>` | Add persons, pagers, email, directories, group members |
-| `update <subcommand>` | Update persons, directories |
-| `delete <subcommand>` | Delete pagers, directories |
-| `assign <subcommand>` | Assign pagers, messaging IDs, email |
-| `set <subcommand>` | Set directory flags (enabled, published, transfer-allowed) |
-| `datafeed <subcommand>` | Data feed add/update person |
-| `config <subcommand>` | Manage server configuration |
+| Command                             | Description                                                                               |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| `get <subcommand>`                  | Query listings, pagers, email, directories, on-call, exceptions, coverage, reference data |
+| `send-page <mid> <text>`            | Send a page to a messaging ID                                                             |
+| `change-status <mid> <code> <text>` | Change a listing's status                                                                 |
+| `add <subcommand>`                  | Add persons, pagers, email, directories, group members                                    |
+| `update <subcommand>`               | Update persons, directories                                                               |
+| `delete <subcommand>`               | Delete pagers, directories                                                                |
+| `assign <subcommand>`               | Assign pagers, messaging IDs, email                                                       |
+| `set <subcommand>`                  | Set directory flags (enabled, published, transfer-allowed)                                |
+| `datafeed <subcommand>`             | Data feed add/update person                                                               |
+| `config <subcommand>`               | Manage server configuration                                                               |
 
 ### Get subcommands
 
@@ -131,17 +131,17 @@ spok-api datafeed add-person --unique-id 12345 --last-name Smith --source HR_FEE
 
 ## Global Flags
 
-| Flag | Description |
-|------|-------------|
-| `--format table\|json\|csv` | Output format (default: table) |
-| `--server <name>` | Use a specific named server |
-| `--host <host>` | Override hostname |
-| `--port <port>` | Override TCP port |
-| `--ssl` | Use SSL/TLS |
-| `--insecure` | Skip TLS certificate verification |
-| `--read-only` | Block write operations |
-| `--clean` | Remove empty/null values from output |
-| `--debug` | Enable debug logging |
+| Flag                        | Description                          |
+| --------------------------- | ------------------------------------ |
+| `--format table\|json\|csv` | Output format (default: table)       |
+| `--server <name>`           | Use a specific named server          |
+| `--host <host>`             | Override hostname                    |
+| `--port <port>`             | Override TCP port                    |
+| `--ssl`                     | Use SSL/TLS                          |
+| `--insecure`                | Skip TLS certificate verification    |
+| `--read-only`               | Block write operations               |
+| `--clean`                   | Remove empty/null values from output |
+| `--debug`                   | Enable debug logging                 |
 
 ## Library API
 
@@ -171,7 +171,11 @@ await service.execute("GetListingInfo", { lid: "308787" });
 ```typescript
 import SpokService, { SpokServiceOptions, SpokResponse } from "spok-api";
 
-const service = new SpokService({ host: "spok.example.com", port: 9722, ssl: true });
+const service = new SpokService({
+  host: "spok.example.com",
+  port: 9722,
+  ssl: true,
+});
 const result: SpokResponse = await service.getListingInfo("308787");
 ```
 
@@ -181,66 +185,55 @@ const result: SpokResponse = await service.getListingInfo("308787");
 const { amcomRequest, buildRequestXml, parseResponseXml } = require("spok-api");
 
 const xml = buildRequestXml("GetListingInfo", { lid: "308787" });
-const response = await amcomRequest("spok.example.com", 9722, "GetListingInfo", { lid: "308787" }, true, true);
+const response = await amcomRequest(
+  "spok.example.com",
+  9722,
+  "GetListingInfo",
+  { lid: "308787" },
+  true,
+  true,
+);
 ```
 
 ### Available Methods
 
-| Category | Methods |
-|----------|---------|
-| **Listings** | `getListingInfo`, `getListingInfoByMid`, `getListingsByName`, `getListingsByEid`, `getListingsBySsn`, `getListingsByUdf` |
-| **SSO/MID** | `getSSOUsername`, `getMessagingID`, `assignMessagingId` |
-| **Pagers** | `getPagerId`, `getPagerInfo`, `getPagerInfoByMid`, `addPager`, `assignPager`, `deletePager` |
-| **Email** | `getEmailAddress`, `addEmailAddress`, `addEmailAddressByLid` |
-| **Directories** | `getListingDirectories`, `getDirectoryInfo`, `addListingDirectory`, `updateDirectory`, `deleteListingDirectory`, `setDirectoryEnabled`, `setDirectoryPublished`, `setDirectoryTransferAllowed` |
-| **Persons** | `addPerson`, `updatePerson` |
-| **Status/Paging** | `changeStatus`, `sendPage` |
-| **Groups** | `getMessageGroupMembers`, `addOncallGroupMember`, `addStaticMessageGroupMember` |
-| **On-call** | `getGroupsCurrentAssignments`, `getGroupsAssignments`, `getIdsCurrentAssignments`, `getIdsAssignments`, `getCurrentAssignmentWithExceptions`, `getCurrentAssignmentLids`, `getOncallGroupRoles`, `getGroupsCurrAssignXml`, `getGroupsAssignmentsXml` |
-| **Exceptions** | `getCurrentException`, `getExceptions`, `getExceptionList` |
-| **Coverage** | `getCoveragePath`, `getFinalCoveringId`, `getFinalCoveringPerson` |
-| **Reference** | `getOrgCodes`, `getPhoneNumberTypes`, `getAllBuildings`, `getTitles` |
-| **Data Feed** | `dataFeedAddPerson`, `dataFeedUpdatePerson` |
-| **Generic** | `execute(method, params)` — call any SmartSuite API method |
+| Category          | Methods                                                                                                                                                                                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Listings**      | `getListingInfo`, `getListingInfoByMid`, `getListingsByName`, `getListingsByEid`, `getListingsBySsn`, `getListingsByUdf`                                                                                                                             |
+| **SSO/MID**       | `getSSOUsername`, `getMessagingID`, `assignMessagingId`                                                                                                                                                                                              |
+| **Pagers**        | `getPagerId`, `getPagerInfo`, `getPagerInfoByMid`, `addPager`, `assignPager`, `deletePager`                                                                                                                                                          |
+| **Email**         | `getEmailAddress`, `addEmailAddress`, `addEmailAddressByLid`                                                                                                                                                                                         |
+| **Directories**   | `getListingDirectories`, `getDirectoryInfo`, `addListingDirectory`, `updateDirectory`, `deleteListingDirectory`, `setDirectoryEnabled`, `setDirectoryPublished`, `setDirectoryTransferAllowed`                                                       |
+| **Persons**       | `addPerson`, `updatePerson`                                                                                                                                                                                                                          |
+| **Status/Paging** | `changeStatus`, `sendPage`                                                                                                                                                                                                                           |
+| **Groups**        | `getMessageGroupMembers`, `addOncallGroupMember`, `addStaticMessageGroupMember`                                                                                                                                                                      |
+| **On-call**       | `getGroupsCurrentAssignments`, `getGroupsAssignments`, `getIdsCurrentAssignments`, `getIdsAssignments`, `getCurrentAssignmentWithExceptions`, `getCurrentAssignmentLids`, `getOncallGroupRoles`, `getGroupsCurrAssignXml`, `getGroupsAssignmentsXml` |
+| **Exceptions**    | `getCurrentException`, `getExceptions`, `getExceptionList`                                                                                                                                                                                           |
+| **Coverage**      | `getCoveragePath`, `getFinalCoveringId`, `getFinalCoveringPerson`                                                                                                                                                                                    |
+| **Reference**     | `getOrgCodes`, `getPhoneNumberTypes`, `getAllBuildings`, `getTitles`                                                                                                                                                                                 |
+| **Data Feed**     | `dataFeedAddPerson`, `dataFeedUpdatePerson`                                                                                                                                                                                                          |
+| **Generic**       | `execute(method, params)` — call any SmartSuite API method                                                                                                                                                                                           |
 
 ## Hooks (Write Safety)
 
-When using spok-api as a CLI tool managed by an AI agent (e.g. Claude Code), you can add a hook to require confirmation before write operations:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "intercept",
-            "command": "echo 'Checking for write operations...' && echo $TOOL_INPUT | node -e \"const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); const c=d.command||''; const writes=['send-page','change-status','add ','update ','delete ','assign ','set ','datafeed ']; if(writes.some(w=>c.includes('spok-api '+w))){process.exit(1)}\""
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+When using spok-api as a CLI tool managed by an AI agent (e.g. Claude Code), you can add a hook to block write operations and require explicit approval. See [docs/claude-code-hooks.md](docs/claude-code-hooks.md) for the full hook configuration, what it blocks, and alternative approaches.
 
 ## Field Reference
 
-| Field | Name | What it is | Example |
-|-------|------|-----------|---------|
-| `lid` | Listing ID | Unique ID for a person record (primary key, auto-assigned on add) | `300001` |
-| `mid` | Messaging ID | ID used for paging/on-call routing — a person can exist without one | `10001` |
-| `eid` | Employee ID | HR employee number (external, from data feed) | `E00001` |
-| `pid` | Pager ID | A specific pager device number or address | `5551234567` |
-| `dirseq` | Directory Sequence | Unique ID for a directory entry (phone number, room, etc.) | `7000001` |
-| `grpnum` | Group Number | Static message group number | `50` |
-| `group_mid` | Group Messaging ID | Messaging ID assigned to an on-call group (same namespace as person MIDs) | `10050` |
-| `ssoun` | SSO Username | Single sign-on username | `jsmith` |
-| `scode` | Status Code | Numeric status code for a listing | `2` |
-| `stext` | Status Text | Freeform status display text (not validated against scode) | `AVAILABLE` |
-| `cos` | Class of Service | Pager routing/protocol class | `LONG_RANGE` |
-| `cog` | Company/Organization Group | Top-level organization identifier | `ACME` |
+| Field       | Name                       | What it is                                                                | Example      |
+| ----------- | -------------------------- | ------------------------------------------------------------------------- | ------------ |
+| `lid`       | Listing ID                 | Unique ID for a person record (primary key, auto-assigned on add)         | `300001`     |
+| `mid`       | Messaging ID               | ID used for paging/on-call routing — a person can exist without one       | `10001`      |
+| `eid`       | Employee ID                | HR employee number (external, from data feed)                             | `E00001`     |
+| `pid`       | Pager ID                   | A specific pager device number or address                                 | `5551234567` |
+| `dirseq`    | Directory Sequence         | Unique ID for a directory entry (phone number, room, etc.)                | `7000001`    |
+| `grpnum`    | Group Number               | Static message group number                                               | `50`         |
+| `group_mid` | Group Messaging ID         | Messaging ID assigned to an on-call group (same namespace as person MIDs) | `10050`      |
+| `ssoun`     | SSO Username               | Single sign-on username                                                   | `jsmith`     |
+| `scode`     | Status Code                | Numeric status code for a listing                                         | `2`          |
+| `stext`     | Status Text                | Freeform status display text (not validated against scode)                | `AVAILABLE`  |
+| `cos`       | Class of Service           | Pager routing/protocol class                                              | `LONG_RANGE` |
+| `cog`       | Company/Organization Group | Top-level organization identifier                                         | `ACME`       |
 
 ## Response Behavior
 
@@ -257,16 +250,16 @@ All responses return HTTP 200 regardless of whether `err_message` is populated. 
 
 The Amcom API passes Oracle database errors through directly. Common ones you may encounter:
 
-| Error | Meaning |
-|-------|---------|
-| `ORA-00001: unique constraint (ATMS.XPK_PAGER_ASSIGNMENT) violated` | Pager already assigned to someone |
-| `ORA-00001: unique constraint (ATMS.XPK_PAGER) violated` | Pager ID already exists (on `add pager`) |
-| `ORA-02291: integrity constraint violated - parent key not found` | Referenced record doesn't exist (e.g. assigning a pager that hasn't been added) |
-| `ORA-02292: integrity constraint violated - child record found` | Can't delete — other records reference this one |
-| `ORA-01400: cannot insert NULL` | A required field was missing |
-| `Matching SSO Username was not found` | SSO lookup failed (Amcom-level, not Oracle) |
-| `No exception records found` | No active exceptions — expected behavior, not an error |
-| `No listing found` | No listing matches the search criteria |
+| Error                                                               | Meaning                                                                         |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `ORA-00001: unique constraint (ATMS.XPK_PAGER_ASSIGNMENT) violated` | Pager already assigned to someone                                               |
+| `ORA-00001: unique constraint (ATMS.XPK_PAGER) violated`            | Pager ID already exists (on `add pager`)                                        |
+| `ORA-02291: integrity constraint violated - parent key not found`   | Referenced record doesn't exist (e.g. assigning a pager that hasn't been added) |
+| `ORA-02292: integrity constraint violated - child record found`     | Can't delete — other records reference this one                                 |
+| `ORA-01400: cannot insert NULL`                                     | A required field was missing                                                    |
+| `Matching SSO Username was not found`                               | SSO lookup failed (Amcom-level, not Oracle)                                     |
+| `No exception records found`                                        | No active exceptions — expected behavior, not an error                          |
+| `No listing found`                                                  | No listing matches the search criteria                                          |
 
 ## Protocol Details
 
