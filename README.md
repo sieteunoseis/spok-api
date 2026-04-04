@@ -216,7 +216,48 @@ const response = await amcomRequest(
 
 ## Hooks (Write Safety)
 
-When using spok-api as a CLI tool managed by an AI agent (e.g. Claude Code), you can add a hook to block write operations and require explicit approval. See [docs/claude-code-hooks.md](docs/claude-code-hooks.md) for the full hook configuration, what it blocks, and alternative approaches.
+When using spok-api with an AI agent like [Claude Code](https://docs.anthropic.com/en/docs/claude-code/hooks), you should add a hook to block write operations and require explicit approval.
+
+**Quick install** with [cc-hooks-install](https://github.com/sieteunoseis/cc-hooks-install):
+
+```bash
+npx cc-hooks-install add sieteunoseis/spok-api
+```
+
+Or **manually** add this to `~/.claude/settings.json` or `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command' | { read -r cmd; if echo \"$cmd\" | grep -qE '^(npx )?spok-api (send-page|change-status|add |update |delete |assign |set |datafeed )'; then echo '{\"decision\":\"block\",\"reason\":\"BLOCKED: spok-api write operation. Get explicit user approval.\"}'; fi; }"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+This blocks all write operations while allowing reads (`get`, `config`) to pass through:
+
+| Blocked keywords | Operations                                                 |
+| ---------------- | ---------------------------------------------------------- |
+| `send-page`      | Send a live page                                           |
+| `change-status`  | Change listing status                                      |
+| `add`            | Create persons, pagers, emails, directories, group members |
+| `update`         | Modify persons and directory entries                       |
+| `delete`         | Remove pagers and directory entries                        |
+| `assign`         | Assign pagers, messaging IDs, emails                       |
+| `set`            | Change directory flags                                     |
+| `datafeed`       | HR data feed add/update                                    |
+
+See [docs/claude-code-hooks.md](docs/claude-code-hooks.md) for the full command-by-command reference, how the hook works, how to test it, and alternative approaches like `--read-only`.
 
 ## Field Reference
 
