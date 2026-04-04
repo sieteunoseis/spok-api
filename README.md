@@ -14,7 +14,13 @@ A TypeScript library and CLI for Spok SmartSuite TCP API operations — on-call 
 npm install spok-api
 ```
 
-### Global CLI install
+### Global CLI + AI Agent Skills (one-liner)
+
+```bash
+npm install -g spok-api && npx skills add sieteunoseis/spok-api
+```
+
+### Global CLI install only
 
 ```bash
 npm install -g spok-api
@@ -24,12 +30,6 @@ Or run without installing:
 
 ```bash
 npx spok-api --help
-```
-
-### AI Agent Skills
-
-```bash
-npx skills add sieteunoseis/spok-api
 ```
 
 ## Requirements

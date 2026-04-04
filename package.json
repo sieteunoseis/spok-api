@@ -1,6 +1,6 @@
 {
   "name": "spok-api",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A library and CLI for Spok SmartSuite TCP API operations",
   "main": "dist/index.js",
   "module": "main.mjs",
@@ -39,6 +39,7 @@
   "bugs": {
     "url": "https://github.com/sieteunoseis/spok-api/issues"
   },
+  "funding": "https://buymeacoffee.com/automatebldrs",
   "homepage": "https://github.com/sieteunoseis/spok-api#readme",
   "engines": {
     "node": ">=18.0.0"
