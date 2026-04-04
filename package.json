@@ -1,6 +1,6 @@
 {
   "name": "spok-api",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A library and CLI for Spok SmartSuite TCP API operations",
   "main": "dist/index.js",
   "module": "main.mjs",
