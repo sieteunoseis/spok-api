@@ -303,3 +303,105 @@ itLab("GetCallerEmailAddress succeeds cleanly for a known id (none configured as
   assert.ok(!res.error, `unexpected error: ${res.error}`);
   assert.ok(res.err_message !== undefined, "expected an err_message field in the response");
 });
+
+// -- Task 5: Status reads -----------------------------------------------------
+// Fixture: lid=48218, mid=66755, eid=41969 (Zhang, An-Sheng) — same person as
+// Task 2/3/4; scode "20" / stext "ENOTIFY ONLY - DO NOT PAGE" confirmed via
+// `get listing-by-lid 48218 --format json`. udf2 "550-SM.CDBIO ADMIN"
+// (department string) also from that same read. ssn "U00144823" and
+// lid 322504 (Aaron, Ruby) reused from Task 1's fixture.
+
+itLab("GetStatus returns the current status for a known mid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetStatus", { mid: "66755" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.strictEqual(res.status_code, "20", "expected status_code 20");
+  assert.ok(
+    String(res.status_text).includes("ENOTIFY ONLY"),
+    "expected known status_text in result"
+  );
+});
+
+itLab("GetStatusCodes returns the status code reference table", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetStatusCodes");
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(res.data, "no data returned");
+});
+
+itLab("GetIdStatus returns the current status for a known mid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetIdStatus", { mid: "66755" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.strictEqual(res.status_code, "20", "expected status_code 20");
+});
+
+itLab("GetStatusesByEid returns the status for a known eid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetStatusesByEid", { eid: "41969" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("48218"), "expected lid 48218 in results");
+});
+
+// GetStatusesByFeedId: amcomapi.xml defines the sole IN param as `fid`
+// (bindname 1, nullable="false") — NOT `feed_id` as the original
+// src/index.ts wrapper sent. Fixed in src/index.ts (getStatusesByFeedId now
+// sends `fid`), the CLI command (`status-by-feed-id <fid>`), and this test;
+// dist rebuilt via `npm run build`. Live-verified the fix: calling with no
+// `fid` at all now returns "request does not contain parameter fid" (proves
+// the server validates that exact param name); calling with any value
+// (mid 66755, lid 48218, eid 41969, the listing's own fkey text, and a bogus
+// string) all return the same clean business error, "No listing record was
+// found that matches that Feed id." — confirming the wrapper is correctly
+// wired. No RPC in amcomapi.xml exposes a listing's actual feed id as an
+// output field (GetListingInfo returns `fkey`/`fdate`, the feed's *name* and
+// *timestamp*, not a feed id), so there is no known-good fid to assert a
+// positive match against.
+test.skip(
+  "GetStatusesByFeedId: fixed param name feed_id->fid per amcomapi.xml; confirmed live (missing-param and business-error responses both clean) but no RPC surfaces a real fid value to fixture against",
+  () => {}
+);
+
+itLab("GetStatusesByLastName finds Zhang with BEGINS WITH", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetStatusesByLastName", { lname: "Zhang", search_type: "BEGINS WITH" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("48218"), "expected lid 48218 in results");
+});
+
+// GetStatusesByLatestDate: amcomapi.xml types `date` as DATE, nullable="false".
+// ISO (2026-07-01), slash, and DD-MON-YYYY forms all returned a clean
+// server-side `errorSource="validation"` "the specified date format is
+// invalid for date" — proving the `date` param name is right but the format
+// is wrong. `DD-MON-YY HH24:MI:SS` (e.g. "01-JUL-26 00:00:00") is accepted:
+// the server echoes it back in a business response. But every date tried
+// across a 16-year span (01-JAN-10, 01-JAN-20, 01-JAN-21, 01-JAN-24,
+// 01-JAN-25, 01-JUN-26, 07-JUL-26) returns the same clean business error,
+// "No listing record was found that matches that date or higher" — this lab
+// dataset has no listing with a status-change date recorded at all, so there
+// is no known-good date to assert a positive match against.
+test.skip(
+  "GetStatusesByLatestDate: format DD-MON-YY HH24:MI:SS confirmed live (ISO/other formats rejected with a clean validation error); no listing in lab data has a status-change date recorded across a 2010-2026 span tried",
+  () => {}
+);
+
+itLab("GetStatusesByName finds an exact match for a known name", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetStatusesByName", { name: "Zhang, An-Sheng", search_type: "EXACT" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("48218"), "expected lid 48218 in results");
+});
+
+itLab("GetStatusesBySsn returns the status for a known ssn", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetStatusesBySsn", { ssn: "U00144823" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("322504"), "expected lid 322504 in results");
+});
+
+itLab("GetStatusesByUdf finds listings sharing a udf2 department string", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetStatusesByUdf", { udf_col: "2", udf: "550-SM.CDBIO ADMIN" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("48218"), "expected lid 48218 in results");
+});

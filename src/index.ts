@@ -635,8 +635,8 @@ class SpokService {
   }
 
   /** Get statuses by feed ID. */
-  async getStatusesByFeedId(feedId: string): Promise<SpokResponse> {
-    return this.execute("GetStatusesByFeedId", { feed_id: feedId });
+  async getStatusesByFeedId(fid: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByFeedId", { fid });
   }
 
   /**

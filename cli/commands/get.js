@@ -553,4 +553,117 @@ module.exports = function registerGetCommand(program) {
         await callAndPrint(program.opts(), "GetRecordNameOnlyByMid", { mid });
       } catch (err) { printError(err); }
     });
+
+  // -- Status subcommands -------------------------------------------------------
+
+  get
+    .command("status <mid>")
+    .description("Get status of a messaging ID")
+    .action(async (mid) => {
+      try {
+        await callAndPrint(program.opts(), "GetStatus", { mid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("status-codes")
+    .description("Get status code reference table")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetStatusCodes");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("id-status <mid>")
+    .description("Get the status of a messaging ID")
+    .action(async (mid) => {
+      try {
+        await callAndPrint(program.opts(), "GetIdStatus", { mid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("status-by-eid <eid>")
+    .description("Get statuses by employee ID")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (eid, opts) => {
+      try {
+        const params = { eid };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetStatusesByEid", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("status-by-feed-id <fid>")
+    .description("Get statuses by feed ID")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (fid, opts) => {
+      try {
+        const params = { fid };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetStatusesByFeedId", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("status-by-lastname <lname>")
+    .description("Get statuses by last name")
+    .requiredOption("--search-type <type>", "EXACT, BEGINS WITH, ENDS WITH, CONTAINS")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (lname, opts) => {
+      try {
+        const params = { lname, search_type: opts.searchType.toUpperCase() };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetStatusesByLastName", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("status-by-latest-date <date>")
+    .description("Get statuses updated on or after a date")
+    .action(async (date) => {
+      try {
+        await callAndPrint(program.opts(), "GetStatusesByLatestDate", { date });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("status-by-name <name>")
+    .description("Get statuses by name")
+    .requiredOption("--search-type <type>", "EXACT, BEGINS WITH, ENDS WITH, CONTAINS")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (name, opts) => {
+      try {
+        const params = { name, search_type: opts.searchType.toUpperCase() };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetStatusesByName", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("status-by-ssn <ssn>")
+    .description("Get statuses by Social Security Number")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (ssn, opts) => {
+      try {
+        const params = { ssn };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetStatusesBySsn", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("status-by-udf <udf>")
+    .description("Get statuses by user-defined field")
+    .requiredOption("--udf-col <col>", "user-defined field column number (1-6)")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (udf, opts) => {
+      try {
+        const params = { udf_col: opts.udfCol, udf };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetStatusesByUdf", params);
+      } catch (err) { printError(err); }
+    });
 };
