@@ -59,6 +59,44 @@ module.exports = function registerGetCommand(program) {
       } catch (err) { printError(err); }
     });
 
+  get
+    .command("listing-by-lastname <lname>")
+    .description("Search listings by last name")
+    .requiredOption("--search-type <type>", "EXACT, BEGINS WITH, ENDS WITH, CONTAINS")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (lname, opts) => {
+      try {
+        const params = { lname, search_type: opts.searchType.toUpperCase() };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetListingsByLastName", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("listing-by-ssn <ssn>")
+    .description("Get listings by Social Security Number")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (ssn, opts) => {
+      try {
+        const params = { ssn };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetListingsBySsn", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("listing-by-udf <udf>")
+    .description("Get listings by user-defined field")
+    .requiredOption("--udf-col <col>", "user-defined field column number (1-6)")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (udf, opts) => {
+      try {
+        const params = { udf_col: opts.udfCol, udf };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetListingsByUdf", params);
+      } catch (err) { printError(err); }
+    });
+
   // -- Pager subcommands ------------------------------------------------------
 
   get
@@ -137,6 +175,23 @@ module.exports = function registerGetCommand(program) {
     .action(async (dirseq) => {
       try {
         await callAndPrint(program.opts(), "GetDirectoryInfo", { dirseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("directory-by-udf <udf>")
+    .description("Get directories by user-defined field")
+    .requiredOption("--udf-col <col>", "user-defined field column number (1-6)")
+    .option("--search-type <type>", "EXACT, BEGINS WITH, ENDS WITH, CONTAINS")
+    .option("--lid <lid>", "restrict search to a listing ID")
+    .option("--phtype <type>", "phone type filter")
+    .action(async (udf, opts) => {
+      try {
+        const params = { udf_col: opts.udfCol, udf };
+        if (opts.searchType) params.search_type = opts.searchType.toUpperCase();
+        if (opts.lid) params.lid = opts.lid;
+        if (opts.phtype) params.phtype = opts.phtype;
+        await callAndPrint(program.opts(), "GetDirectoriesByUdf", params);
       } catch (err) { printError(err); }
     });
 
@@ -265,6 +320,53 @@ module.exports = function registerGetCommand(program) {
     .action(async () => {
       try {
         await callAndPrint(program.opts(), "GetTitles");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("directory-types")
+    .description("Get directory type reference list")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetDirectoryTypes");
+      } catch (err) { printError(err); }
+    });
+
+  // -- Record name subcommands -------------------------------------------------
+
+  get
+    .command("record-name-by-lid <lid>")
+    .description("Get record name by listing ID")
+    .action(async (lid) => {
+      try {
+        await callAndPrint(program.opts(), "GetRecordNameByLid", { lid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("record-name-by-mid <mid>")
+    .description("Get record name by messaging ID")
+    .action(async (mid) => {
+      try {
+        await callAndPrint(program.opts(), "GetRecordNameByMid", { mid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("record-name-by-pid <pid>")
+    .description("Get record name by pager ID")
+    .action(async (pid) => {
+      try {
+        await callAndPrint(program.opts(), "GetRecordNameByPid", { pid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("record-name-only-by-mid <mid>")
+    .description("Get record name only by messaging ID (fastest name-only lookup)")
+    .action(async (mid) => {
+      try {
+        await callAndPrint(program.opts(), "GetRecordNameOnlyByMid", { mid });
       } catch (err) { printError(err); }
     });
 };
