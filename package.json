@@ -19,7 +19,8 @@
     "build": "tsc",
     "prepare": "npm run build",
     "type-check": "tsc --noEmit",
-    "test": "echo \"No tests yet\""
+    "test": "echo \"No tests yet\"",
+    "test:integration": "node --test test/integration/**/*.test.js"
   },
   "keywords": [
     "spok",
