@@ -126,6 +126,46 @@ module.exports = function registerGetCommand(program) {
       } catch (err) { printError(err); }
     });
 
+  get
+    .command("pager-info-by-lid <lid>")
+    .description("Get pager info by listing ID")
+    .action(async (lid) => {
+      try {
+        await callAndPrint(program.opts(), "GetPagerInfoByLid", { lid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("unassigned-contact-devices <lid>")
+    .description("Get unassigned contact devices for a listing")
+    .requiredOption("--cltype <cltype>", "contact list type: ON HOURS or OFF HOURS")
+    .action(async (lid, opts) => {
+      try {
+        await callAndPrint(program.opts(), "GetUnassignedContactDevices", {
+          lid, cltype: opts.cltype,
+        });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("is-pager-by-dirseq <dirseq>")
+    .description("Check whether a directory sequence number belongs to a pager")
+    .action(async (dirseq) => {
+      try {
+        await callAndPrint(program.opts(), "IsPagerByDirectorySeqnum", { dirseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("is-pager-by-lid <lid>")
+    .description("Check whether a listing ID + phone number combination belongs to a pager")
+    .requiredOption("--phnum <phnum>", "phone number to check")
+    .action(async (lid, opts) => {
+      try {
+        await callAndPrint(program.opts(), "IsPagerByListingId", { lid, phnum: opts.phnum });
+      } catch (err) { printError(err); }
+    });
+
   // -- Email / SSO / MID subcommands ------------------------------------------
 
   get
@@ -329,6 +369,33 @@ module.exports = function registerGetCommand(program) {
     .action(async () => {
       try {
         await callAndPrint(program.opts(), "GetDirectoryTypes");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("pager-coses")
+    .description("Get pager carrier/COS list")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetPagerCoses");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("pager-models")
+    .description("Get pager model list")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetPagerModels");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("page-routes")
+    .description("Get page routes reference list")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetPageRoutes");
       } catch (err) { printError(err); }
     });
 

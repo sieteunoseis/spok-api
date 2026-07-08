@@ -593,12 +593,13 @@ class SpokService {
     return this.execute("IsPagerByDirectorySeqnum", { dirseq });
   }
 
-  /** Check whether a listing ID belongs to a pager. */
-  // NOTE: The server's IsPagerByListingId RPC rejects `lid` and demands `phnum`,
-  // making it a duplicate of isPagerByPhone. Verified against the lab server —
-  // this wrapper cannot function as named; prefer isPagerByPhone.
-  async isPagerByListingId(lid: string): Promise<SpokResponse> {
-    return this.execute("IsPagerByListingId", { lid });
+  /**
+   * Check whether a listing ID + phone number combination belongs to a pager.
+   * @param lid required — the listing ID.
+   * @param phnum required — the phone number to check.
+   */
+  async isPagerByListingId(lid: string, phnum: string): Promise<SpokResponse> {
+    return this.execute("IsPagerByListingId", { lid, phnum });
   }
 
   /** Check whether a phone number belongs to a pager. */
