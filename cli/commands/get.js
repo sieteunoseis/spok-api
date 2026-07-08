@@ -441,6 +441,81 @@ module.exports = function registerGetCommand(program) {
       } catch (err) { printError(err); }
     });
 
+  // -- Org / address / department subcommands ---------------------------------
+
+  get
+    .command("addresses")
+    .description("Get all addresses")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetAllAddresses");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("address-types")
+    .description("Get address type reference list")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetAddressTypes");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("departments")
+    .description("Get full department list")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetAllDepartments");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("department-hierarchy <dirseq>")
+    .description("Get hierarchical department tree by directory sequence number")
+    .action(async (dirseq) => {
+      try {
+        await callAndPrint(program.opts(), "GetDepartmentHierarchy", { dirseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("email-addresses <lid>")
+    .description("Get all email addresses by listing ID")
+    .action(async (lid) => {
+      try {
+        await callAndPrint(program.opts(), "GetEmailAddresses", { lid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("email-by-lid <lid>")
+    .description("Get email address(es) of a specified user using listing_id")
+    .action(async (lid) => {
+      try {
+        await callAndPrint(program.opts(), "GetEmailAddressByLid", { lid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("email-by-order <lid>")
+    .description("Get email address by listing ID and display order")
+    .requiredOption("--dorder <dorder>", "display order of the email address")
+    .action(async (lid, opts) => {
+      try {
+        await callAndPrint(program.opts(), "GetEmailAddressByOrder", { lid, dorder: opts.dorder });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("caller-email <cid>")
+    .description("Get email address(es) of a specified caller id")
+    .action(async (cid) => {
+      try {
+        await callAndPrint(program.opts(), "GetCallerEmailAddress", { cid });
+      } catch (err) { printError(err); }
+    });
+
   // -- Record name subcommands -------------------------------------------------
 
   get

@@ -211,3 +211,95 @@ test.skip(
   "IsPagerByPhone: no phnum in lab data resolves to the registered pager (tried 5 formats of known pager pid 15033290798@sms.smartmessagingsuite.com; server consistently returns 'not found in directory entries')",
   () => {}
 );
+
+// -- Task 4: Org/address/dept reads ------------------------------------------
+// Fixture: lid=48218, mid=66755 (Zhang, An-Sheng) — same fixture as Task 2/3.
+// dirseq=4415168 ("10D EPILEPSY MONITORING UNIT / OCTRI") discovered as a
+// top-level department from `GetAllDepartments`; the lid-derived dirseqs from
+// `get directory 48218` (5280927, etc.) are listing-level directory records,
+// not department records, and return "No departments found" here.
+
+itLab("GetAllAddresses returns the address list", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetAllAddresses");
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(res.data, "no data returned");
+});
+
+itLab("GetAddressTypes returns the address type reference list", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetAddressTypes");
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("MAIN"), "expected 'MAIN' address type in result");
+});
+
+itLab("GetAllDepartments returns the department list", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetAllDepartments");
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(res.data, "no data returned");
+});
+
+itLab("GetDepartmentHierarchy returns the tree for a known top-level dirseq", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetDepartmentHierarchy", { dirseq: "4415168" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(
+    JSON.stringify(res.data).includes("10D EPILEPSY MONITORING UNIT"),
+    "expected known department name in result"
+  );
+});
+
+itLab("GetEmailAddresses returns the email address for a known lid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetEmailAddresses", { lid: "48218" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("zhanga@ohsu.edu"), "expected known email in result");
+});
+
+itLab("GetEmailAddressByLid returns the email address for a known lid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetEmailAddressByLid", { lid: "48218" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(
+    JSON.stringify(res).includes("zhanga@ohsu.edu"),
+    "expected known email in result"
+  );
+});
+
+// GetEmailAddressByOrder: amcomapi.xml defines the params as `lid` (bindname
+// 1) + `dorder` (bindname 2) — NOT `mid` as the original src/index.ts wrapper
+// assumed. Confirmed live: calling with `mid` returns a clean validation
+// error ("request does not contain parameter lid"); switching to `lid`
+// succeeds. Fixed in src/index.ts (getEmailAddressByOrder now takes
+// lid + dorder), the CLI command (`email-by-order <lid> --dorder <dorder>`),
+// and this test; dist rebuilt via `npm run build`. dorder=2 is the real
+// display order for lid 48218's only email address (discovered via
+// GetEmailAddresses above) — dorder=1 returns a clean "no email address"
+// business error for this lid.
+itLab("GetEmailAddressByOrder returns the email address for a known lid + dorder", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetEmailAddressByOrder", { lid: "48218", dorder: "2" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("zhanga@ohsu.edu"), "expected known email in result");
+});
+
+// GetCallerEmailAddress: amcomapi.xml defines the param as `cid` (Caller ID)
+// — NOT `mid` as the original src/index.ts wrapper assumed. Fixed in
+// src/index.ts (getCallerEmailAddress now takes cid), the CLI command
+// (`caller-email <cid>`), and this test; dist rebuilt via `npm run build`.
+// Unlike GetEmailAddressByOrder, this procedure has no server-side param-name
+// validation (bogus param names and no params at all return the identical
+// clean "not found" response), so there's no error-message proof the rename
+// mattered functionally — but amcomapi.xml is the canonical param source and
+// must be followed verbatim regardless. No value in this lab dataset resolves
+// to a caller id with an email on file (tried lid 48218, lid 322504, mid
+// 54361 — all return the same clean business "not found"), so there's no
+// known-good fixture to assert a positive match against; the response is
+// clean (no param/validation error), confirming correct wiring.
+itLab("GetCallerEmailAddress succeeds cleanly for a known id (none configured as a caller id in lab data)", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetCallerEmailAddress", { cid: "48218" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(res.err_message !== undefined, "expected an err_message field in the response");
+});

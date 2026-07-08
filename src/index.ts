@@ -522,14 +522,14 @@ class SpokService {
     return this.execute("GetEmailAddressByLid", { lid });
   }
 
-  /** Get email address by messaging ID and display order. */
-  async getEmailAddressByOrder(mid: string, dorder: string): Promise<SpokResponse> {
-    return this.execute("GetEmailAddressByOrder", { mid, dorder });
+  /** Get email address by listing ID and display order. */
+  async getEmailAddressByOrder(lid: string, dorder: string): Promise<SpokResponse> {
+    return this.execute("GetEmailAddressByOrder", { lid, dorder });
   }
 
-  /** Get caller email address by messaging ID. */
-  async getCallerEmailAddress(mid: string): Promise<SpokResponse> {
-    return this.execute("GetCallerEmailAddress", { mid });
+  /** Get email address(es) by caller ID. */
+  async getCallerEmailAddress(cid: string): Promise<SpokResponse> {
+    return this.execute("GetCallerEmailAddress", { cid });
   }
 
   /** Get alternate phone by messaging ID. */
