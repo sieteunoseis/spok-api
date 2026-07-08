@@ -112,7 +112,7 @@ itLab("Org CRUD lifecycle (self-created only)", async () => {
   try {
     const add = await svc.execute("AddOrg", { /* required params from amcomapi.xml */ });
     assert.ok(!add.error, `AddOrg failed: ${add.error}`);
-    const orgseq = extractSeq(add);            // capture the id we created
+    const orgseq = extractSeq(add, "orgseq");  // capture by EXACT field name (from amcomapi.xml)
     assert.ok(orgseq, "no orgseq returned; refusing to delete anything");
     reg.track("DeleteOrg", { orgseq });
     const read = await svc.execute("GetOrgCodes");   // confirm it exists
@@ -135,7 +135,7 @@ itLab("Org CRUD lifecycle (self-created only)", async () => {
 - Test: harness self-check in `spok-api/test/integration/reads.test.js` (created here with one smoke test)
 
 **Interfaces:**
-- Produces: `lab()` → `SpokService` from active config (throws if none); `itLab(name, fn)` → `node:test` `test` when `process.env.SPOK_LAB==="1"` else `test.skip`; `class CreatedRegistry { track(method, params); async teardown(svc) }`; `extractSeq(res)` → first `*seq`/`*id` string in the response or `null`.
+- Produces: `lab()` → `SpokService` from active config (throws if none); `itLab(name, fn)` → `node:test` `test` when `process.env.SPOK_LAB==="1"` else `test.skip`; `class CreatedRegistry { track(method, params); async teardown(svc) }`; `extractSeq(res, key)` → the value of the **exact** field `key` (searched recursively) or `null`. It takes an explicit key (never guesses) so a write test can only ever capture the id field it actually created — required for the delete-only-self-created safety guarantee.
 
 - [ ] **Step 1: Write the failing smoke test**
 ```js

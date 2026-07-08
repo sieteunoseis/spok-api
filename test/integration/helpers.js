@@ -14,10 +14,25 @@ function lab() {
 }
 const LIVE = process.env.SPOK_LAB === "1";
 const itLab = (name, fn) => (LIVE ? test(name, fn) : test.skip(name, fn));
-function extractSeq(res) {
-  const s = JSON.stringify(res || {});
-  const m = s.match(/"([a-z_]*(?:seq|id))"\s*:\s*"?(\d+)"?/i);
-  return m ? m[2] : null;
+// Return the value of the exact field `key` found anywhere in the response
+// (recursively), as a string, or null. Never guesses — callers pass the
+// exact id/seq field name they created (from amcomapi.xml).
+function extractSeq(res, key) {
+  if (!key) return null;
+  function walk(node) {
+    if (node == null || typeof node !== "object") return null;
+    if (Array.isArray(node)) {
+      for (const el of node) { const v = walk(el); if (v != null) return v; }
+      return null;
+    }
+    if (Object.prototype.hasOwnProperty.call(node, key) &&
+        node[key] != null && typeof node[key] !== "object") {
+      return String(node[key]);
+    }
+    for (const k of Object.keys(node)) { const v = walk(node[k]); if (v != null) return v; }
+    return null;
+  }
+  return walk(res);
 }
 class CreatedRegistry {
   constructor() { this.items = []; }
