@@ -537,14 +537,26 @@ class SpokService {
     return this.execute("GetAlternatePhone", { mid });
   }
 
-  /** Get phone number by messaging ID. */
-  async getPhoneNumber(mid: string): Promise<SpokResponse> {
-    return this.execute("GetPhoneNumber", { mid });
+  /**
+   * Get phone number(s) of a specified user.
+   * @param mid required — messaging ID of the user.
+   * @param phoneNumberType optional — a specific phone number type to filter to.
+   */
+  async getPhoneNumber(mid: string, phoneNumberType?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { mid };
+    if (phoneNumberType) params.phone_number_type = phoneNumberType;
+    return this.execute("GetPhoneNumber", params);
   }
 
-  /** Get phone number by listing ID. */
-  async getPhoneNumberByLid(lid: string): Promise<SpokResponse> {
-    return this.execute("GetPhoneNumberByLid", { lid });
+  /**
+   * Get phone number(s) of a specified user using listing_id.
+   * @param lid required — listing ID of the user.
+   * @param phoneNumberType optional — a specific phone number type to filter to.
+   */
+  async getPhoneNumberByLid(lid: string, phoneNumberType?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { lid };
+    if (phoneNumberType) params.phone_number_type = phoneNumberType;
+    return this.execute("GetPhoneNumberByLid", params);
   }
 
   /** Get address type reference list. */
@@ -603,8 +615,8 @@ class SpokService {
   }
 
   /** Check whether a phone number belongs to a pager. */
-  async isPagerByPhone(phone: string): Promise<SpokResponse> {
-    return this.execute("IsPagerByPhone", { phone });
+  async isPagerByPhone(phnum: string): Promise<SpokResponse> {
+    return this.execute("IsPagerByPhone", { phnum });
   }
 
   /** Get current status by messaging ID. */

@@ -162,3 +162,52 @@ test.skip(
   "IsPagerByListingId: fixed to require lid+phnum per amcomapi.xml (both nullable=false); confirmed live — lid=48218 phnum='503-494-7811' returns 'not defined as a pager' (clean business response, not a param error) but no lab fixture is itself a registered pager",
   () => {}
 );
+
+// -- Task 3: Email/phone reads -----------------------------------------------
+// Fixture: mid=66755 / lid=48218 (Zhang, An-Sheng) — same fixture as Task 2.
+// Phone numbers 503-494-7811 (DEPT), 503-494-5846 (LAB), 503-494-4253 (FAX)
+// discovered via `get directory 48218`.
+
+itLab("GetPhoneNumber returns phone numbers for a known mid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetPhoneNumber", { mid: "66755" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res).includes("503-494-7811"), "expected known phone number in result");
+});
+
+itLab("GetPhoneNumberByLid returns phone numbers for a known lid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetPhoneNumberByLid", { lid: "48218" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res).includes("503-494-7811"), "expected known phone number in result");
+});
+
+// GetAlternatePhone: no positive fixture exists — checked the existing
+// fixtures (mid 54361, 16818, 66755) plus an exhaustive scan of 216 mids
+// across the "El" and "Ya" GetListingsByName prefixes; none have an alternate
+// phone configured in this lab dataset. Unlike the pager Is* checks below,
+// this call still succeeds cleanly for a known mid — `res.error` is unset and
+// the server returns the expected Oracle "no data found" business condition
+// via `err_message`, proving the `mid` param is accepted and evaluated
+// correctly (no wiring/param error). That is enough to confirm correct wiring
+// without inventing a value.
+itLab("GetAlternatePhone succeeds cleanly for a known mid (none configured in lab data)", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetAlternatePhone", { mid: "66755" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(res.err_message !== undefined, "expected an err_message field in the response");
+});
+
+// IsPagerByPhone: tried the lab's one known registered pager device
+// (pid 15033290798@sms.smartmessagingsuite.com, from Task 2's
+// GetPagerInfoByLid on lid 48218) in 5 phone-number formats (raw digits,
+// without the leading 1, dashed 503-329-0798, and both with/without the
+// @domain suffix) — every variant returns "<code>25002</code> The phone
+// number is not found in directory entries.", a clean business error (not a
+// param/type error), consistent with Task 2's finding that this lab's pager
+// device isn't exposed via any phnum-keyed lookup path. No known-good phnum
+// exists in this lab dataset to assert a true/success result against.
+test.skip(
+  "IsPagerByPhone: no phnum in lab data resolves to the registered pager (tried 5 formats of known pager pid 15033290798@sms.smartmessagingsuite.com; server consistently returns 'not found in directory entries')",
+  () => {}
+);

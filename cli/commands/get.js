@@ -166,6 +166,15 @@ module.exports = function registerGetCommand(program) {
       } catch (err) { printError(err); }
     });
 
+  get
+    .command("is-pager-by-phone <phnum>")
+    .description("Check whether a phone number belongs to a pager")
+    .action(async (phnum) => {
+      try {
+        await callAndPrint(program.opts(), "IsPagerByPhone", { phnum });
+      } catch (err) { printError(err); }
+    });
+
   // -- Email / SSO / MID subcommands ------------------------------------------
 
   get
@@ -174,6 +183,39 @@ module.exports = function registerGetCommand(program) {
     .action(async (mid) => {
       try {
         await callAndPrint(program.opts(), "GetEmailAddress", { mid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("phone-number <mid>")
+    .description("Get phone number(s) of a specified user")
+    .option("--type <type>", "an optional specific phone number type to filter to")
+    .action(async (mid, opts) => {
+      try {
+        const params = { mid };
+        if (opts.type) params.phone_number_type = opts.type;
+        await callAndPrint(program.opts(), "GetPhoneNumber", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("phone-number-by-lid <lid>")
+    .description("Get phone number(s) of a specified user using listing_id")
+    .option("--type <type>", "an optional specific phone number type to filter to")
+    .action(async (lid, opts) => {
+      try {
+        const params = { lid };
+        if (opts.type) params.phone_number_type = opts.type;
+        await callAndPrint(program.opts(), "GetPhoneNumberByLid", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("alternate-phone <mid>")
+    .description("Get an alternate phone number for a messaging ID")
+    .action(async (mid) => {
+      try {
+        await callAndPrint(program.opts(), "GetAlternatePhone", { mid });
       } catch (err) { printError(err); }
     });
 
