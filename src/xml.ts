@@ -262,6 +262,21 @@ export function parseResponseXml(xmlText: string): SpokResponse {
     };
   }
 
+  // Check for a top-level <error> element (e.g. validation errors). These sit
+  // outside the success/failure branches and carry the server's own message —
+  // surface it instead of a generic "no success/failure" placeholder.
+  const errorMatch = xmlText.match(/<error\b([^>]*)>([\s\S]*?)<\/error>/);
+  if (errorMatch) {
+    const errorSourceMatch = errorMatch[1].match(/\berrorSource="([^"]*)"/);
+    const retvalMatch = xmlText.match(/<parameter[^>]*\bname="retval"[^>]*>([\s\S]*?)<\/parameter>/);
+    return {
+      error: errorMatch[2].trim() || "Unknown error",
+      errorCode: retvalMatch ? retvalMatch[1].trim() : null,
+      errorSource: errorSourceMatch ? errorSourceMatch[1] : undefined,
+      method,
+    };
+  }
+
   // Check for success
   const successMatch = xmlText.match(/<success[^>]*>([\s\S]*?)<\/success>/);
   if (!successMatch) {

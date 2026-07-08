@@ -369,10 +369,12 @@ class SpokService {
 
   // ─── High-priority CLOB reads ──────────────────────────────────────────────
 
-  /** Search listings by last name (CLOB output — bulk-safe). */
-  async getListingsByLastName(lname: string, searchType?: string, midFlag?: string): Promise<SpokResponse> {
-    const params: Record<string, string> = { lname };
-    if (searchType) params.search_type = searchType;
+  /**
+   * Search listings by last name (CLOB output — bulk-safe).
+   * @param searchType required by the server — one of EXACT, BEGINS WITH, ENDS WITH, CONTAINS.
+   */
+  async getListingsByLastName(lname: string, searchType: string, midFlag?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { lname, search_type: searchType };
     if (midFlag) params.mid_flag = midFlag;
     return this.execute("GetListingsByLastName", params);
   }
@@ -399,9 +401,12 @@ class SpokService {
     return this.execute("GetAllAddresses");
   }
 
-  /** Get all message groups. */
-  async getMessageGroups(): Promise<SpokResponse> {
-    return this.execute("GetMessageGroups");
+  /**
+   * Get message groups visible to a requesting listing.
+   * @param reqlid required — the requesting operator's listing ID.
+   */
+  async getMessageGroups(reqlid: string): Promise<SpokResponse> {
+    return this.execute("GetMessageGroups", { reqlid });
   }
 
   /** Get pager info keyed by listing ID. */
@@ -435,13 +440,13 @@ class SpokService {
   }
 
   /** Get instruction info by instruction sequence number. */
-  async getInstructionInfo(instrseq: string): Promise<SpokResponse> {
-    return this.execute("GetInstructionInfo", { instrseq });
+  async getInstructionInfo(seqnum: string): Promise<SpokResponse> {
+    return this.execute("GetInstructionInfo", { seqnum });
   }
 
   /** Get a shared listing instruction by instruction sequence number. */
-  async getSharedListingInstruction(instrseq: string): Promise<SpokResponse> {
-    return this.execute("GetSharedListingInstruction", { instrseq });
+  async getSharedListingInstruction(seqnum: string): Promise<SpokResponse> {
+    return this.execute("GetSharedListingInstruction", { seqnum });
   }
 
   /** Get status code reference table. */
@@ -449,9 +454,9 @@ class SpokService {
     return this.execute("GetStatusCodes");
   }
 
-  /** Get paging configuration info. */
-  async getPagingInfo(): Promise<SpokResponse> {
-    return this.execute("GetPagingInfo");
+  /** Get paging info for a messaging ID. */
+  async getPagingInfo(mid: string): Promise<SpokResponse> {
+    return this.execute("GetPagingInfo", { mid });
   }
 
   /** Get pager carrier/COS list. */
@@ -464,14 +469,20 @@ class SpokService {
     return this.execute("GetPagerModels");
   }
 
-  /** Get currently-active notifications. */
-  async getActiveNotifications(): Promise<SpokResponse> {
-    return this.execute("GetActiveNotifications");
+  /**
+   * Get currently-active notifications visible to a requesting listing.
+   * @param rlid required — the requesting operator's listing ID.
+   */
+  async getActiveNotifications(rlid: string): Promise<SpokResponse> {
+    return this.execute("GetActiveNotifications", { rlid });
   }
 
-  /** Get all event templates. */
-  async getAllEventTemplates(): Promise<SpokResponse> {
-    return this.execute("GetAllEventTemplates");
+  /**
+   * Get all event templates visible to a requesting listing.
+   * @param reqlid required — the requesting operator's listing ID.
+   */
+  async getAllEventTemplates(reqlid: string): Promise<SpokResponse> {
+    return this.execute("GetAllEventTemplates", { reqlid });
   }
 
   /** Get event template detail by template ID. */
@@ -501,9 +512,9 @@ class SpokService {
 
   // ─── Additional reads (contacts, devices, status) ──────────────────────────
 
-  /** Get all email addresses by messaging ID. */
-  async getEmailAddresses(mid: string): Promise<SpokResponse> {
-    return this.execute("GetEmailAddresses", { mid });
+  /** Get all email addresses by listing ID. */
+  async getEmailAddresses(lid: string): Promise<SpokResponse> {
+    return this.execute("GetEmailAddresses", { lid });
   }
 
   /** Get email address by listing ID. */
@@ -546,19 +557,30 @@ class SpokService {
     return this.execute("GetDirectoryTypes");
   }
 
-  /** Get profile specialty list. */
-  async getProfileSpecialties(): Promise<SpokResponse> {
-    return this.execute("GetProfileSpecialties");
+  /**
+   * Get profile specialties for a listing.
+   * @param irFid required — the listing/feed ID to look up specialties for.
+   */
+  async getProfileSpecialties(irFid: string): Promise<SpokResponse> {
+    return this.execute("GetProfileSpecialties", { ir_fid: irFid });
   }
 
-  /** Get assigned contact devices by messaging ID. */
-  async getAssignedContactDevices(mid: string): Promise<SpokResponse> {
-    return this.execute("GetAssignedContactDevices", { mid });
+  /**
+   * Get assigned contact devices for a listing.
+   * @param lid required — the listing ID.
+   * @param cltype required — the contact list type: "ON HOURS" or "OFF HOURS".
+   */
+  async getAssignedContactDevices(lid: string, cltype: string): Promise<SpokResponse> {
+    return this.execute("GetAssignedContactDevices", { lid, cltype });
   }
 
-  /** Get unassigned contact devices by messaging ID. */
-  async getUnassignedContactDevices(mid: string): Promise<SpokResponse> {
-    return this.execute("GetUnassignedContactDevices", { mid });
+  /**
+   * Get unassigned contact devices for a listing.
+   * @param lid required — the listing ID.
+   * @param cltype required — the contact list type: "ON HOURS" or "OFF HOURS".
+   */
+  async getUnassignedContactDevices(lid: string, cltype: string): Promise<SpokResponse> {
+    return this.execute("GetUnassignedContactDevices", { lid, cltype });
   }
 
   /** Get page routes reference list. */
@@ -572,6 +594,9 @@ class SpokService {
   }
 
   /** Check whether a listing ID belongs to a pager. */
+  // NOTE: The server's IsPagerByListingId RPC rejects `lid` and demands `phnum`,
+  // making it a duplicate of isPagerByPhone. Verified against the lab server —
+  // this wrapper cannot function as named; prefer isPagerByPhone.
   async isPagerByListingId(lid: string): Promise<SpokResponse> {
     return this.execute("IsPagerByListingId", { lid });
   }
@@ -601,9 +626,12 @@ class SpokService {
     return this.execute("GetStatusesByFeedId", { feed_id: feedId });
   }
 
-  /** Get statuses by last name. */
-  async getStatusesByLastName(lname: string): Promise<SpokResponse> {
-    return this.execute("GetStatusesByLastName", { lname });
+  /**
+   * Get statuses by last name.
+   * @param searchType required — one of EXACT, BEGINS WITH, ENDS WITH, CONTAINS.
+   */
+  async getStatusesByLastName(lname: string, searchType: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByLastName", { lname, search_type: searchType });
   }
 
   /** Get statuses updated on or after a date (YYYY-MM-DD). */
@@ -611,9 +639,12 @@ class SpokService {
     return this.execute("GetStatusesByLatestDate", { date });
   }
 
-  /** Get statuses by name. */
-  async getStatusesByName(name: string): Promise<SpokResponse> {
-    return this.execute("GetStatusesByName", { name });
+  /**
+   * Get statuses by name.
+   * @param searchType required — one of EXACT, BEGINS WITH, ENDS WITH, CONTAINS.
+   */
+  async getStatusesByName(name: string, searchType: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByName", { name, search_type: searchType });
   }
 
   /** Get statuses by SSN. */
@@ -626,9 +657,9 @@ class SpokService {
     return this.execute("GetStatusesByUdf", { udf_col: udfCol, udf });
   }
 
-  /** Get work hours by messaging ID. */
-  async getWorkHours(mid: string): Promise<SpokResponse> {
-    return this.execute("GetWorkHours", { mid });
+  /** Get work hours by listing ID. */
+  async getWorkHours(lid: string): Promise<SpokResponse> {
+    return this.execute("GetWorkHours", { lid });
   }
 
   /** Get notification status by event activation ID. */
@@ -661,9 +692,13 @@ class SpokService {
     return this.execute("GetTemplateRecipientCount", { etid });
   }
 
-  /** Get query template info. */
-  async getQueryTemplateInfo(): Promise<SpokResponse> {
-    return this.execute("GetQueryTemplateInfo");
+  /**
+   * Get query template info.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param qseq required — the query sequence number.
+   */
+  async getQueryTemplateInfo(reqlid: string, qseq: string): Promise<SpokResponse> {
+    return this.execute("GetQueryTemplateInfo", { reqlid, qseq });
   }
 
   // ─── Monitoring ────────────────────────────────────────────────────────────
@@ -746,8 +781,8 @@ class SpokService {
   }
 
   /** Update an email address by listing ID. */
-  async updateEmailAddressByLid(lid: string, emaddr: string, newEmaddr: string): Promise<SpokResponse> {
-    return this.execute("UpdateEmailAddressByLid", { lid, emaddr, new_emaddr: newEmaddr });
+  async updateEmailAddressByLid(lid: string, oldEmaddr: string, newEmaddr: string): Promise<SpokResponse> {
+    return this.execute("UpdateEmailAddressByLid", { lid, old_emaddr: oldEmaddr, new_emaddr: newEmaddr });
   }
 
   /** Assign a pager to a listing by listing ID. */
@@ -772,14 +807,21 @@ class SpokService {
     return this.execute("UpdateListingInstruction", params);
   }
 
-  /** Delete a listing instruction by sequence number. */
-  async deleteListingInstruction(instrseq: string): Promise<SpokResponse> {
-    return this.execute("DeleteListingInstruction", { instrseq });
+  /**
+   * Delete a listing instruction by sequence number.
+   * @param seqnum required — the instruction sequence number.
+   * @param lid required — the owning listing ID (server needs both).
+   */
+  async deleteListingInstruction(seqnum: string, lid: string): Promise<SpokResponse> {
+    return this.execute("DeleteListingInstruction", { seqnum, lid });
   }
 
-  /** Share a listing instruction with another listing. */
-  async shareListingInstruction(instrseq: string, targetLid: string): Promise<SpokResponse> {
-    return this.execute("ShareListingInstruction", { instrseq, target_lid: targetLid });
+  /**
+   * Share a listing instruction with another listing.
+   * @param seqnum required — the instruction sequence number (the family uses seqnum, not instrseq).
+   */
+  async shareListingInstruction(seqnum: string, targetLid: string): Promise<SpokResponse> {
+    return this.execute("ShareListingInstruction", { seqnum, target_lid: targetLid });
   }
 
   /** Change an on-call exception. */
@@ -802,9 +844,12 @@ class SpokService {
     return this.execute("UpdatePersonalContactDevice", params);
   }
 
-  /** Delete a personal contact device by device sequence number. */
-  async deletePersonalContactDevice(devseq: string): Promise<SpokResponse> {
-    return this.execute("DeletePersonalContactDevice", { devseq });
+  /**
+   * Delete a personal contact device.
+   * @param pdoseq required — the device sequence number (returned as pdoseq by getAssignedContactDevices).
+   */
+  async deletePersonalContactDevice(pdoseq: string): Promise<SpokResponse> {
+    return this.execute("DeletePersonalContactDevice", { pdoseq });
   }
 
   /** Delete all personal device options for a messaging ID. */
@@ -933,9 +978,13 @@ class SpokService {
     return this.execute("UpdateWorkHour", params);
   }
 
-  /** Delete a work hour entry by sequence number. */
-  async deleteWorkHour(wkhrseq: string): Promise<SpokResponse> {
-    return this.execute("DeleteWorkHour", { wkhrseq });
+  /**
+   * Delete a work hour entry.
+   * @param lid required — the owning listing ID.
+   * @param phrseq required — the work-hour sequence number (returned as phrseq by getWorkHours).
+   */
+  async deleteWorkHour(lid: string, phrseq: string): Promise<SpokResponse> {
+    return this.execute("DeleteWorkHour", { lid, phrseq });
   }
 
   /** Unassign all work hours from a messaging ID. */
