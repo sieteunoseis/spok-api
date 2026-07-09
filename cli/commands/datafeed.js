@@ -158,4 +158,72 @@ module.exports = function registerDatafeedCommand(program) {
         await printResult(output, globalOpts.format);
       } catch (err) { printError(err); }
     });
+
+  datafeed
+    .command("org")
+    .description("Add, update, or delete an organization via the data feed API (IUD)")
+    .requiredOption("--source <source>", "source system")
+    .option("--org-code <code>", "organization code")
+    .option("--org-name <name>", "organization name")
+    .option("--org-parent <parent>", "organization parent")
+    .option("--org-remark <remark>", "organization remark")
+    .option("--delete-org-code <code>", "organization code to delete (delete mode)")
+    .option("--transaction-id <id>", "transaction ID")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+
+        const params = { SourceSystem: opts.source };
+
+        const optMap = {
+          orgCode: "OrgCode", orgName: "OrgName", orgParent: "OrgParent",
+          orgRemark: "OrgRemark", deleteOrgCode: "DeleteOrgCode",
+          transactionId: "TransactionId",
+        };
+
+        for (const [cliKey, amcomKey] of Object.entries(optMap)) {
+          if (opts[cliKey] !== undefined) params[amcomKey] = opts[cliKey];
+        }
+
+        const result = await callAmcom(globalOpts, "IudOrg", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  datafeed
+    .command("specialty")
+    .description("Add, update, or delete a profile specialty via the data feed API (IUD)")
+    .requiredOption("--unique-id <id>", "unique identifier (feed ID) of the owning profile")
+    .requiredOption("--source <source>", "source system")
+    .option("--specialty-code <code>", "specialty code")
+    .option("--specialty <specialty>", "specialty")
+    .option("--device-priority <priority>", "display order")
+    .option("--remark <remark>", "remark")
+    .option("--message <message>", "specialty message")
+    .option("--delete-specialty-code <code>", "specialty code to remove (delete mode)")
+    .option("--transaction-id <id>", "transaction ID")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+
+        const params = { UniqueID: opts.uniqueId, SourceSystem: opts.source };
+
+        const optMap = {
+          specialtyCode: "SpecialtyCode", specialty: "Specialty",
+          devicePriority: "DevicePriority", remark: "Remark", message: "Message",
+          deleteSpecialtyCode: "DeleteSpecialtyCode", transactionId: "TransactionId",
+        };
+
+        for (const [cliKey, amcomKey] of Object.entries(optMap)) {
+          if (opts[cliKey] !== undefined) params[amcomKey] = opts[cliKey];
+        }
+
+        const result = await callAmcom(globalOpts, "IudProfileSpecialty", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
 };

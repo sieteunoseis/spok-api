@@ -53,6 +53,51 @@ module.exports = function registerUpdateCommand(program) {
     });
 
   update
+    .command("org <orgseq>")
+    .description("Update an existing organization")
+    .option("--orgname <orgname>", "organization name")
+    .option("--orgcode <orgcode>", "organization code")
+    .option("--remark <remark>", "remark")
+    .option("--parent <parent>", "parent organization sequence")
+    .option("--chldrn <chldrn>", "children flag")
+    .action(async (orgseq, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = buildParams(opts);
+        params.orgseq = orgseq;
+        const result = await callAmcom(globalOpts, "UpdateOrg", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
+    .command("address <addseq>")
+    .description("Update an existing address")
+    .option("--bcode <bcode>", "building code")
+    .option("--addtype <addtype>", "address type")
+    .option("--addr1 <addr1>", "address line 1")
+    .option("--addr2 <addr2>", "address line 2")
+    .option("--addr3 <addr3>", "address line 3")
+    .option("--addr4 <addr4>", "address line 4")
+    .option("--city <city>", "city")
+    .option("--state <state>", "state")
+    .option("--country <country>", "country")
+    .option("--pcode <pcode>", "postal code")
+    .action(async (addseq, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = buildParams(opts);
+        params.addseq = addseq;
+        const result = await callAmcom(globalOpts, "UpdateAddress", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
     .command("directory <dirseq>")
     .description("Update an existing directory entry")
     .option("--parent <parent>", "parent")

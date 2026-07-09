@@ -146,6 +146,50 @@ module.exports = function registerAddCommand(program) {
     });
 
   add
+    .command("org")
+    .description("Add a new organization")
+    .requiredOption("--orgname <orgname>", "organization name")
+    .requiredOption("--orgcode <orgcode>", "organization code")
+    .option("--orgseq <orgseq>", "organization sequence (auto-assigned if omitted)")
+    .option("--remark <remark>", "remark")
+    .option("--parent <parent>", "parent organization sequence")
+    .option("--chldrn <chldrn>", "children flag")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = buildParams(opts);
+        const result = await callAmcom(globalOpts, "AddOrg", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
+    .command("address")
+    .description("Add a new address")
+    .requiredOption("--addr1 <addr1>", "address line 1")
+    .requiredOption("--city <city>", "city")
+    .requiredOption("--state <state>", "state")
+    .requiredOption("--pcode <pcode>", "postal code")
+    .option("--bcode <bcode>", "building code")
+    .option("--addtype <addtype>", "address type")
+    .option("--addr2 <addr2>", "address line 2")
+    .option("--addr3 <addr3>", "address line 3")
+    .option("--addr4 <addr4>", "address line 4")
+    .option("--country <country>", "country")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = buildParams(opts);
+        const result = await callAmcom(globalOpts, "AddAddress", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
     .command("oncall-member")
     .description("Add a member to an on-call group")
     .requiredOption("--oncall-mid <oncallMid>", "on-call group messaging ID")
