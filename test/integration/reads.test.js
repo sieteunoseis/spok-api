@@ -668,3 +668,43 @@ for (const [rpc, reason] of [
     () => {}
   );
 }
+
+// -- Task 9: Monitoring reads --------------------------------------------------
+// All 6 procedures take `lid` (requesting listing ID) plus a second id that
+// identifies a live, in-flight event notification: `evrseq` for
+// MonitorEventDetail/MonitorEventStatus/MonitorEventStatusSummary, `procseq`
+// for MonitorProcStatusSummary, `stepseq` for MonitorStepStatusSummary/
+// MonitorStepResponses (all amcomapi.xml `nullable="false"`; none of the 6
+// procedures have an amcomapi.xml <description>, so CLI/wrapper descriptions
+// are written from procedure semantics, same as Task 8's undocumented RPCs).
+//
+// Per Task 8, no event has ever been activated in this lab dataset, so there
+// is no real evrseq anywhere to discover, and the stepseq/procseq values
+// visible from GetEventTemplateDetail (stepseq=2491, procseq=2451) are
+// *template definition* ids, a different id-space from a live monitored
+// instance. Live-probed lid=13553 (a real reqlid with real event templates,
+// per Task 8) against all 6 procedures with both the template-definition ids
+// (procseq=2451 / stepseq=2491) and an obviously-bogus id (999999999): every
+// combination returns the identical clean business error `<code>25002</code>
+// <description>The specified event notification is not found or is not
+// accessible.</description>` — confirming each procedure's param wiring
+// (lid + the second param) is correct and reaches the server, but that there
+// is no discoverable, real evrseq/procseq/stepseq value whose specific
+// response would mean anything (any value, real-space or not, degrades to
+// the same not-found response). Per the brief ("never invent an id") and the
+// same precedent as Task 8's GetEventActivationDetail/GetNotificationStatus
+// skips, all 6 are skipped rather than asserted against a fabricated id.
+
+for (const [rpc, reason] of [
+  ["MonitorEventDetail", "needs a real evrseq from an activated event notification"],
+  ["MonitorEventStatus", "needs a real evrseq from an activated event notification"],
+  ["MonitorEventStatusSummary", "needs a real evrseq from an activated event notification"],
+  ["MonitorProcStatusSummary", "needs a real procseq from an activated event notification (the procseq visible on GetEventTemplateDetail is a template-definition id, a different id-space, and returns the same not-found response)"],
+  ["MonitorStepStatusSummary", "needs a real stepseq from an activated event notification (the stepseq visible on GetEventTemplateDetail is a template-definition id, a different id-space, and returns the same not-found response)"],
+  ["MonitorStepResponses", "needs a real stepseq from an activated event notification (the stepseq visible on GetEventTemplateDetail is a template-definition id, a different id-space, and returns the same not-found response)"],
+]) {
+  test.skip(
+    `${rpc}: no live event has ever been activated in this lab dataset (confirmed via GetEventActivations in Task 8, and via live probe here — every candidate second-param id, real-template-space or bogus, returns the identical "event notification is not found or is not accessible" business error), so ${reason} does not exist to discover`,
+    () => {}
+  );
+}

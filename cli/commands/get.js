@@ -924,4 +924,72 @@ module.exports = function registerGetCommand(program) {
         await callAndPrint(program.opts(), "GetQueryTemplateInfo", { reqlid, qseq });
       } catch (err) { printError(err); }
     });
+
+  // -- Monitoring subcommands ---------------------------------------------------
+
+  get
+    .command("monitor-event-detail")
+    .description("Get monitor detail for an event notification")
+    .requiredOption("--lid <lid>", "requesting listing ID")
+    .requiredOption("--evrseq <evrseq>", "event notification/activation sequence number")
+    .action(async (opts) => {
+      try {
+        await callAndPrint(program.opts(), "MonitorEventDetail", { lid: opts.lid, evrseq: opts.evrseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("monitor-event-status")
+    .description("Get monitor status for an event notification")
+    .requiredOption("--lid <lid>", "requesting listing ID")
+    .requiredOption("--evrseq <evrseq>", "event notification/activation sequence number")
+    .action(async (opts) => {
+      try {
+        await callAndPrint(program.opts(), "MonitorEventStatus", { lid: opts.lid, evrseq: opts.evrseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("monitor-event-status-summary")
+    .description("Get monitor status summary for an event notification")
+    .requiredOption("--lid <lid>", "requesting listing ID")
+    .requiredOption("--evrseq <evrseq>", "event notification/activation sequence number")
+    .action(async (opts) => {
+      try {
+        await callAndPrint(program.opts(), "MonitorEventStatusSummary", { lid: opts.lid, evrseq: opts.evrseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("monitor-proc-status-summary")
+    .description("Get monitor status summary for a notification procedure")
+    .requiredOption("--lid <lid>", "requesting listing ID")
+    .requiredOption("--procseq <procseq>", "notification procedure sequence number")
+    .action(async (opts) => {
+      try {
+        await callAndPrint(program.opts(), "MonitorProcStatusSummary", { lid: opts.lid, procseq: opts.procseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("monitor-step-status-summary")
+    .description("Get monitor status summary for a notification step")
+    .requiredOption("--lid <lid>", "requesting listing ID")
+    .requiredOption("--stepseq <stepseq>", "notification step sequence number")
+    .action(async (opts) => {
+      try {
+        await callAndPrint(program.opts(), "MonitorStepStatusSummary", { lid: opts.lid, stepseq: opts.stepseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("monitor-step-responses")
+    .description("Get monitor step responses for a notification step")
+    .requiredOption("--lid <lid>", "requesting listing ID")
+    .requiredOption("--stepseq <stepseq>", "notification step sequence number")
+    .action(async (opts) => {
+      try {
+        await callAndPrint(program.opts(), "MonitorStepResponses", { lid: opts.lid, stepseq: opts.stepseq });
+      } catch (err) { printError(err); }
+    });
 };
