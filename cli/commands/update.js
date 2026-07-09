@@ -134,6 +134,55 @@ module.exports = function registerUpdateCommand(program) {
         await printResult(output, globalOpts.format);
       } catch (err) { printError(err); }
     });
+  update
+    .command("oncall-group <oncallMid>")
+    .description("Update an existing on-call group")
+    .option("--name <name>", "on-call group name")
+    .option("--remark <remark>", "remark")
+    .option("--group-parent-mid <groupParentMid>", "parent messaging ID of the on-call group")
+    .option("--max-oncall-assignments <max>", "maximum number of concurrent assignments")
+    .option("--timezone <timezone>", "timezone of the on-call group")
+    .action(async (oncallMid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { oncall_mid: oncallMid };
+        if (opts.name) params.name = opts.name;
+        if (opts.remark) params.remark = opts.remark;
+        if (opts.groupParentMid) params.group_parent_mid = opts.groupParentMid;
+        if (opts.maxOncallAssignments) params.max_oncall_assignments = opts.maxOncallAssignments;
+        if (opts.timezone) params.timezone = opts.timezone;
+        const result = await callAmcom(globalOpts, "UpdateOncallGroup", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
+    .command("oncall-assignment <assignmentSeqnum>")
+    .description("Update an existing on-call assignment")
+    .option("--start-date <startDate>", "assignment start date (e.g. 01-JAN-25 00:00:00)")
+    .option("--end-date <endDate>", "assignment end date (e.g. 31-DEC-26 00:00:00)")
+    .option("--priority <priority>", "assignment priority")
+    .option("--timezone <timezone>", "timezone of the assignment")
+    .option("--remark <remark>", "remark")
+    .option("--assignment-role <role>", "assignment role")
+    .action(async (assignmentSeqnum, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { assignment_seqnum: assignmentSeqnum };
+        if (opts.startDate) params.start_date = opts.startDate;
+        if (opts.endDate) params.end_date = opts.endDate;
+        if (opts.priority) params.priority = opts.priority;
+        if (opts.timezone) params.timezone = opts.timezone;
+        if (opts.remark) params.remark = opts.remark;
+        if (opts.assignmentRole) params.assignment_role = opts.assignmentRole;
+        const result = await callAmcom(globalOpts, "UpdateOncallAssignment", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
 };
 
 function buildParams(opts) {

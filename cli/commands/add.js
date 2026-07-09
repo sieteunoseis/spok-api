@@ -207,6 +207,77 @@ module.exports = function registerAddCommand(program) {
     });
 
   add
+    .command("oncall-group")
+    .description("Add a new on-call group")
+    .requiredOption("--oncall-mid <oncallMid>", "on-call group messaging ID (must be unused)")
+    .option("--name <name>", "on-call group name")
+    .option("--remark <remark>", "remark")
+    .option("--group-parent-mid <groupParentMid>", "parent messaging ID of the on-call group")
+    .option("--max-oncall-assignments <max>", "maximum number of concurrent assignments")
+    .option("--timezone <timezone>", "timezone of the on-call group")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { oncall_mid: opts.oncallMid };
+        if (opts.name) params.name = opts.name;
+        if (opts.remark) params.remark = opts.remark;
+        if (opts.groupParentMid) params.group_parent_mid = opts.groupParentMid;
+        if (opts.maxOncallAssignments) params.max_oncall_assignments = opts.maxOncallAssignments;
+        if (opts.timezone) params.timezone = opts.timezone;
+        const result = await callAmcom(globalOpts, "AddOncallGroup", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
+    .command("oncall-assignment")
+    .description("Add an on-call assignment")
+    .requiredOption("--group-mid <groupMid>", "on-call group messaging ID")
+    .requiredOption("--mid <mid>", "listing messaging ID to assign")
+    .requiredOption("--start-date <startDate>", "assignment start date (e.g. 01-JAN-25 00:00:00)")
+    .requiredOption("--end-date <endDate>", "assignment end date (e.g. 31-DEC-26 00:00:00)")
+    .option("--priority <priority>", "assignment priority")
+    .option("--timezone <timezone>", "timezone of the assignment")
+    .option("--remark <remark>", "remark")
+    .option("--assignment-role <role>", "assignment role")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = {
+          group_mid: opts.groupMid, mid: opts.mid,
+          start_date: opts.startDate, end_date: opts.endDate,
+        };
+        if (opts.priority) params.priority = opts.priority;
+        if (opts.timezone) params.timezone = opts.timezone;
+        if (opts.remark) params.remark = opts.remark;
+        if (opts.assignmentRole) params.assignment_role = opts.assignmentRole;
+        const result = await callAmcom(globalOpts, "AddOncallAssignment", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
+    .command("oncall-group-role")
+    .description("Add a role to an on-call group")
+    .requiredOption("--ocmid <ocmid>", "on-call group messaging ID")
+    .requiredOption("--ocrole <ocrole>", "role name")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "AddOncallGroupRole", {
+          ocmid: opts.ocmid, ocrole: opts.ocrole,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
     .command("group-member")
     .description("Add a member to a static message group")
     .requiredOption("--reqlid <reqlid>", "requesting listing ID")

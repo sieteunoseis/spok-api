@@ -991,8 +991,8 @@ class SpokService {
   }
 
   /** Delete an on-call assignment by sequence number. */
-  async deleteOncallAssignment(ocaseq: string): Promise<SpokResponse> {
-    return this.execute("DeleteOncallAssignment", { ocaseq });
+  async deleteOncallAssignment(assignmentSeqnum: string): Promise<SpokResponse> {
+    return this.execute("DeleteOncallAssignment", { assignment_seqnum: assignmentSeqnum });
   }
 
   /** Add an on-call group. */
@@ -1006,8 +1006,8 @@ class SpokService {
   }
 
   /** Delete an on-call group by messaging ID. */
-  async deleteOncallGroup(ocmid: string): Promise<SpokResponse> {
-    return this.execute("DeleteOncallGroup", { ocmid });
+  async deleteOncallGroup(oncallMid: string): Promise<SpokResponse> {
+    return this.execute("DeleteOncallGroup", { oncall_mid: oncallMid });
   }
 
   /** Delete a member from an on-call group. */
@@ -1020,9 +1020,9 @@ class SpokService {
     return this.execute("AddOncallGroupRole", params);
   }
 
-  /** Delete a role from an on-call group by role ID. */
-  async deleteOncallGroupRole(roleid: string): Promise<SpokResponse> {
-    return this.execute("DeleteOncallGroupRole", { roleid });
+  /** Delete a role from an on-call group (composite key: ocmid + ocrole). */
+  async deleteOncallGroupRole(ocmid: string, ocrole: string): Promise<SpokResponse> {
+    return this.execute("DeleteOncallGroupRole", { ocmid, ocrole });
   }
 
   // ─── Writes — work hours ───────────────────────────────────────────────────
