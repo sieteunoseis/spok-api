@@ -53,6 +53,20 @@ itLab("On-call group + assignment + role + member CRUD lifecycle (self-created o
   let roleCreated = false;
 
   try {
+    // SAFETY: refuse to create on a mid that already exists — never touch a
+    // pre-existing record. GetListingInfoByMid signals found-vs-not-found via
+    // the top-level `error` field: an unused mid returns
+    // `error: "... No listing record was found ..."`, while a real listing
+    // returns listing data with no `error` at all (verified live against mid
+    // 999999 (unused, errors) vs 54361 (real person listing, no error) —
+    // see task-12-report.md). So "in use" is simply the absence of an error.
+    const preexist = await svc.execute("GetListingInfoByMid", { mid: oncallMid });
+    assert.ok(
+      preexist && preexist.error,
+      `refusing to run: on-call group mid ${oncallMid} is already in use on the lab ` +
+        `(GetListingInfoByMid returned no error, meaning a real listing exists)`
+    );
+
     // -- AddOncallGroup ---------------------------------------------------
     const addGroup = await svc.execute("AddOncallGroup", {
       name: "ZZ-APITEST-ONCALL",
