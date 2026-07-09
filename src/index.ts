@@ -969,8 +969,8 @@ class SpokService {
   }
 
   /** Delete an address by sequence number. */
-  async deleteAddress(addrseq: string): Promise<SpokResponse> {
-    return this.execute("DeleteAddress", { addrseq });
+  async deleteAddress(addseq: string): Promise<SpokResponse> {
+    return this.execute("DeleteAddress", { addseq });
   }
 
   /** Insert/update/delete a profile specialty (IUD pattern). */
