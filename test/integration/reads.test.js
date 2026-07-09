@@ -708,3 +708,59 @@ for (const [rpc, reason] of [
     () => {}
   );
 }
+
+// -- Task 10: Misc/reference reads ---------------------------------------------
+// Fixture: mid=66755/lid=48218 (Zhang), mid=54361/lid=322504 (Aaron),
+// mid=16818/lid=307199 (Adair, discovered via GetListingInfoByMid).
+//
+// GetPagingInfo: amcomapi.xml defines lname/fname/mid as all nullable="true";
+// mid=66755 returns a full, real record (name/status/dlist) — a genuine
+// positive fixture, unlike most reads in this task.
+//
+// GetWorkHours and GetExceptionList both return the identical clean "not
+// found" business response (errorCode -1) for every fixture tried — mid
+// 66755/54361/16818 for GetExceptionList, and lid 307199/13553/297877/263279/
+// 187535 (all real lids from Tasks 7-9) plus both brief fixtures for
+// GetWorkHours. Per the same precedent as GetIdsAssignmentsXml/
+// GetActiveNotifications/GetEventActivations (Tasks 7-8): a clean, well-formed
+// business "not found" response for a real id proves the param is accepted
+// and evaluated correctly (no wiring/param error), so these are asserted as
+// passes against the known error text, not skipped.
+//
+// GetProfileSpecialties: ir_fid ("feed id") was tried against every id in
+// this lab dataset's fixture set — lid (48218, 322504, 16818, 307199, 13553,
+// 297877, 263279, 187535), mid (66755, 54361, 16818), and eid (41969) — all 12
+// return the identical clean "No listing record was found that matches that
+// feed id (X)" business error, proving `ir_fid` occupies a distinct id space
+// from lid/mid/eid (same conclusion Task 5 reached for GetStatusesByFeedId's
+// `fid`). No procedure in amcomapi.xml exposes a listing's real feed id as an
+// output field (GetListingInfo's `fkey`/`fdate` are the feed's name/timestamp,
+// not an id), so there is no known-good ir_fid to fixture against.
+
+itLab("GetPagingInfo returns a real record for a known mid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetPagingInfo", { mid: "66755" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("Zhang, An-Sheng"), "expected known name in result");
+});
+
+itLab("GetWorkHours returns the known 'not found' business response for a known lid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetWorkHours", { lid: "48218" });
+  assert.ok(res.error, "expected the known 'no work hour records' business response");
+  assert.ok(String(res.error).includes("No work hour records were found"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});
+
+itLab("GetExceptionList returns the known 'not found' business response for a known mid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetExceptionList", { mid: "66755" });
+  assert.ok(res.error, "expected the known 'no exception records' business response");
+  assert.ok(String(res.error).includes("No exception records found"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});
+
+test.skip(
+  "GetProfileSpecialties: no ir_fid in lab data resolves to a listing (tried 12 real ids spanning lid/mid/eid across all Task fixtures; server consistently returns a clean 'No listing record was found that matches that feed id' business error, confirming ir_fid is a distinct, undiscoverable id space, same as GetStatusesByFeedId's fid in Task 5)",
+  () => {}
+);

@@ -992,4 +992,49 @@ module.exports = function registerGetCommand(program) {
         await callAndPrint(program.opts(), "MonitorStepResponses", { lid: opts.lid, stepseq: opts.stepseq });
       } catch (err) { printError(err); }
     });
+
+  // -- Misc/reference subcommands ----------------------------------------------
+
+  get
+    .command("paging-info")
+    .description("Get paging info by name or messaging ID")
+    .option("--mid <mid>", "messaging ID")
+    .option("--lname <lname>", "last name")
+    .option("--fname <fname>", "first name")
+    .action(async (opts) => {
+      try {
+        const params = {};
+        if (opts.mid) params.mid = opts.mid;
+        if (opts.lname) params.lname = opts.lname;
+        if (opts.fname) params.fname = opts.fname;
+        await callAndPrint(program.opts(), "GetPagingInfo", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("profile-specialties <ir_fid>")
+    .description("Get all specialties by feed id")
+    .action(async (irFid) => {
+      try {
+        await callAndPrint(program.opts(), "GetProfileSpecialties", { ir_fid: irFid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("work-hours <lid>")
+    .description("Get work hours by listing ID")
+    .action(async (lid) => {
+      try {
+        await callAndPrint(program.opts(), "GetWorkHours", { lid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("exception-list <mid>")
+    .description("Get exception list by messaging ID")
+    .action(async (mid) => {
+      try {
+        await callAndPrint(program.opts(), "GetExceptionList", { mid });
+      } catch (err) { printError(err); }
+    });
 };
