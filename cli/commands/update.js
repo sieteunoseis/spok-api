@@ -183,6 +183,29 @@ module.exports = function registerUpdateCommand(program) {
         await printResult(output, globalOpts.format);
       } catch (err) { printError(err); }
     });
+
+  update
+    .command("work-hour <lid>")
+    .description("Update an existing work hour entry")
+    .requiredOption("--phrseq <phrseq>", "work hour sequence number (from `get work-hours`)")
+    .option("--cltype <cltype>", "contact list type")
+    .option("--stime <stime>", "start time (e.g. \"08:00 AM\")")
+    .option("--etime <etime>", "end time (e.g. \"05:00 PM\")")
+    .option("--wdays <wdays>", "work days (e.g. \"MON,TUE,WED\")")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { lid, phrseq: opts.phrseq };
+        if (opts.cltype) params.cltype = opts.cltype;
+        if (opts.stime) params.stime = opts.stime;
+        if (opts.etime) params.etime = opts.etime;
+        if (opts.wdays) params.wdays = opts.wdays;
+        const result = await callAmcom(globalOpts, "UpdateWorkHour", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
 };
 
 function buildParams(opts) {

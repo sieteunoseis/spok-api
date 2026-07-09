@@ -1046,9 +1046,13 @@ class SpokService {
     return this.execute("DeleteWorkHour", { lid, phrseq });
   }
 
-  /** Unassign all work hours from a messaging ID. */
-  async unassignWorkHours(mid: string): Promise<SpokResponse> {
-    return this.execute("UnassignWorkHours", { mid });
+  /**
+   * Unassign all work hours from a listing.
+   * @param lid required — the owning listing ID (per amcomapi.xml `UnassignWorkHours`
+   * takes only `lid`, not `mid` — verified live: unassigns all AddWorkHour records for that lid).
+   */
+  async unassignWorkHours(lid: string): Promise<SpokResponse> {
+    return this.execute("UnassignWorkHours", { lid });
   }
 
   // ─── Writes — message groups ───────────────────────────────────────────────

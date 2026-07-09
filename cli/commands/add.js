@@ -299,6 +299,26 @@ module.exports = function registerAddCommand(program) {
         await printResult(output, globalOpts.format);
       } catch (err) { printError(err); }
     });
+
+  add
+    .command("work-hour")
+    .description("Add a work hour entry to a listing")
+    .requiredOption("--lid <lid>", "listing ID")
+    .requiredOption("--cltype <cltype>", "contact list type (server requires ON HOURS)")
+    .requiredOption("--stime <stime>", "start time (e.g. \"08:00 AM\")")
+    .requiredOption("--etime <etime>", "end time (e.g. \"05:00 PM\")")
+    .requiredOption("--wdays <wdays>", "work days (e.g. \"MON,TUE,WED\")")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "AddWorkHour", {
+          lid: opts.lid, cltype: opts.cltype, stime: opts.stime, etime: opts.etime, wdays: opts.wdays,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
 };
 
 function buildParams(opts) {

@@ -126,4 +126,31 @@ module.exports = function registerDeleteCommand(program) {
         await printResult(output, globalOpts.format);
       } catch (err) { printError(err); }
     });
+
+  del
+    .command("work-hour <lid>")
+    .description("Delete a single work hour entry by listing ID and sequence number")
+    .requiredOption("--phrseq <phrseq>", "work hour sequence number (from `get work-hours`)")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeleteWorkHour", { lid, phrseq: opts.phrseq });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
+    .command("work-hours <lid>")
+    .description("Unassign (delete) all work hour entries from a listing")
+    .action(async (lid) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "UnassignWorkHours", { lid });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
 };
