@@ -554,6 +554,35 @@ module.exports = function registerGetCommand(program) {
       } catch (err) { printError(err); }
     });
 
+  // -- Instructions subcommands -------------------------------------------------
+
+  get
+    .command("listing-instructions <lid>")
+    .description("Get instructions assigned to a given listing record")
+    .action(async (lid) => {
+      try {
+        await callAndPrint(program.opts(), "GetListingInstructions", { lid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("instruction-info <seqnum>")
+    .description("Get detail information for a given instruction")
+    .action(async (seqnum) => {
+      try {
+        await callAndPrint(program.opts(), "GetInstructionInfo", { seqnum });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("shared-listing-instruction <seqnum>")
+    .description("Get listing record(s) assigned to given instruction")
+    .action(async (seqnum) => {
+      try {
+        await callAndPrint(program.opts(), "GetSharedListingInstruction", { seqnum });
+      } catch (err) { printError(err); }
+    });
+
   // -- Status subcommands -------------------------------------------------------
 
   get

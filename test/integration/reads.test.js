@@ -405,3 +405,37 @@ itLab("GetStatusesByUdf finds listings sharing a udf2 department string", async 
   assert.ok(!res.error, `unexpected error: ${res.error}`);
   assert.ok(JSON.stringify(res.data).includes("48218"), "expected lid 48218 in results");
 });
+
+// -- Task 6: Instructions reads -----------------------------------------------
+// Neither fixture lid (48218, 322504) has any listing instruction ("No
+// listing instructions found" from GetListingInstructions on both). Scanned
+// GetListingsByName "Ad" BEGINS WITH mid_flag ALL (120 lids) with
+// GetListingInstructions on each; lid=187535 ("Adams, Joanna K PA", mid
+// 12104) is the first hit, with a single INDIVIDUAL instruction,
+// seqnum=149812, itext beginning "ACD 4649498". That real seqnum was then
+// used to live-verify GetInstructionInfo (returns the same instruction) and
+// GetSharedListingInstruction (returns the owning lid/mid/name for that
+// seqnum) — no seqnum invented.
+
+itLab("GetListingInstructions returns the instruction for a known lid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetListingInstructions", { lid: "187535" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("149812"), "expected known seqnum in result");
+  assert.ok(JSON.stringify(res.data).includes("ACD 4649498"), "expected known itext in result");
+});
+
+itLab("GetInstructionInfo returns detail for a known seqnum", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetInstructionInfo", { seqnum: "149812" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("ACD 4649498"), "expected known itext in result");
+});
+
+itLab("GetSharedListingInstruction returns the owning listing for a known seqnum", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetSharedListingInstruction", { seqnum: "149812" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("187535"), "expected known lid 187535 in result");
+  assert.ok(JSON.stringify(res.data).includes("Adams"), "expected known name 'Adams' in result");
+});
