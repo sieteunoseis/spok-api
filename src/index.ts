@@ -284,8 +284,12 @@ class SpokService {
   }
 
   /** Get all on-call assignments by messaging ID. */
-  async getIdsAssignments(mid: string): Promise<SpokResponse> {
-    return this.execute("GetIdsAssignments", { mid });
+  async getIdsAssignments(
+    mid: string, startDate: string, endDate: string, timezone: string
+  ): Promise<SpokResponse> {
+    return this.execute("GetIdsAssignments", {
+      mid, start_date: startDate, end_date: endDate, timezone,
+    });
   }
 
   /** Get current on-call assignment with exceptions by group name. */
@@ -501,8 +505,10 @@ class SpokService {
   }
 
   /** Get on-call assignments for a messaging ID as XML. */
-  async getIdsAssignmentsXml(mid: string, tz: string): Promise<SpokResponse> {
-    return this.execute("GetIdsAssignmentsXml", { mid, tz });
+  async getIdsAssignmentsXml(
+    mid: string, ocastart: string, ocaend: string, tz: string
+  ): Promise<SpokResponse> {
+    return this.execute("GetIdsAssignmentsXml", { mid, ocastart, ocaend, tz });
   }
 
   /** Get current on-call assignment for a messaging ID as XML. */

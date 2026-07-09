@@ -439,3 +439,129 @@ itLab("GetSharedListingInstruction returns the owning listing for a known seqnum
   assert.ok(JSON.stringify(res.data).includes("187535"), "expected known lid 187535 in result");
   assert.ok(JSON.stringify(res.data).includes("Adams"), "expected known name 'Adams' in result");
 });
+
+// -- Task 7: On-call/assignment reads -----------------------------------------
+// Fixture: on-call group ocmid=18753, name "MICU/MEDICAL INTENSIVE CARE UNIT ON
+// CALL" (second probe group ocmid=11707, "ADULT PAIN SERVICE ON CALL"); person
+// mid=54361 (Aaron)/66755 (Zhang); reqlid/lid=48218 (Zhang) reused from Task 2.
+//
+// Date format for GetIdsAssignments' start_date/end_date: ISO and bare
+// DD-MON-YY were both rejected with a clean validation error ("the specified
+// date format is invalid for start_date/end_date"); `DD-MON-YY HH24:MI:SS`
+// (e.g. "01-JAN-25 00:00:00") is accepted — same format discovered for
+// GetStatusesByLatestDate in Task 5.
+//
+// GetIdsAssignmentsXml: amcomapi.xml requires mid + ocastart + ocaend (all
+// nullable="false") + tz (nullable="true") — the pre-existing src/index.ts
+// wrapper only sent mid+tz, so calling it live returned a clean "request does
+// not contain parameter ocastart/ocaend"-class validation failure. Fixed
+// getIdsAssignmentsXml() to take (mid, ocastart, ocaend, tz) and rebuilt dist.
+// GetIdsAssignments had the same shape of bug — the wrapper only sent `mid`,
+// dropping the required start_date/end_date/timezone — fixed to take
+// (mid, startDate, endDate, timezone) and send the exact `start_date`/
+// `end_date`/`timezone` parameter names from amcomapi.xml.
+//
+// GetIdsAssignmentsXml / GetIdsCurrAssignXml / GetGroupsAssignmentsXml /
+// GetGroupsCurrAssignXml all return their result via `xml_result`, and for
+// this lab dataset every one of these fixtures (both on-call groups, both
+// person mids) genuinely has zero on-call assignments configured. The server
+// reports that as `<success><parameter name="retval">-1</parameter>
+// <parameter name="xml_result"><error><code>25000</code><description>No
+// assignments found.</description></error></parameter></success>` — a
+// well-formed, expected business response (not a param/validation error),
+// which the client's XML parser surfaces as `res.error`/`res.errorCode`. Per
+// the task brief this is a valid, non-skip pass for the ocmid-keyed reads;
+// live-testing showed the identical clean "No assignments found" (code 25000)
+// response for the mid-keyed reads too, across both fixture groups and both
+// fixture people and multiple tz formats/omission — confirming correct wiring
+// rather than a param bug, so all four are asserted the same way below.
+
+itLab("GetMessageGroups returns message groups visible to a known reqlid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetMessageGroups", { reqlid: "48218" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("NEONATAL CODE BLUE"), "expected a known group name in result");
+});
+
+itLab("GetOncallGroupRoles returns the on-call group role reference list", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetOncallGroupRoles");
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("18747"), "expected a known ocmid in result");
+});
+
+itLab("GetIdsAssignments succeeds cleanly for a known mid (none configured in lab data)", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetIdsAssignments", {
+    mid: "54361", start_date: "01-JAN-25 00:00:00", end_date: "31-DEC-26 00:00:00", timezone: "America/Los_Angeles",
+  });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.strictEqual(res.assignment_list, "", "expected an empty assignment_list for this mid");
+});
+
+itLab("GetIdsAssignmentsXml returns the known 'no assignments' business response for a known mid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetIdsAssignmentsXml", {
+    mid: "54361", ocastart: "01-JAN-25 00:00:00", ocaend: "31-DEC-26 00:00:00", tz: "America/Los_Angeles",
+  });
+  assert.ok(res.error, "expected the known 'no assignments' business response");
+  assert.ok(String(res.error).includes("No assignments found"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});
+
+itLab("GetIdsCurrAssignXml returns the known 'no assignments' business response for a known mid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetIdsCurrAssignXml", { mid: "66755", tz: "America/Los_Angeles" });
+  assert.ok(res.error, "expected the known 'no assignments' business response");
+  assert.ok(String(res.error).includes("No assignments found"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});
+
+itLab("GetGroupsAssignmentsXml returns the known 'no assignments' business response for a known ocmid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetGroupsAssignmentsXml", {
+    ocmid: "18753", ocastart: "01-JAN-25 00:00:00", ocaend: "31-DEC-26 00:00:00", tz: "America/Los_Angeles",
+  });
+  assert.ok(res.error, "expected the known 'no assignments' business response");
+  assert.ok(String(res.error).includes("No assignments found"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});
+
+itLab("GetGroupsCurrAssignXml returns the known 'no assignments' business response for a known ocmid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetGroupsCurrAssignXml", { ocmid: "18753", tz: "America/Los_Angeles" });
+  assert.ok(res.error, "expected the known 'no assignments' business response");
+  assert.ok(String(res.error).includes("No assignments found"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});
+
+itLab("GetCurrentAssignmentLids returns cleanly for a known on-call group name", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetCurrentAssignmentLids", { name: "MICU/MEDICAL INTENSIVE CARE UNIT ON CALL" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+});
+
+itLab("GetCurrentAssignmentWithExceptions returns cleanly for a known on-call group name", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetCurrentAssignmentWithExceptions", { name: "MICU/MEDICAL INTENSIVE CARE UNIT ON CALL" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+});
+
+// GetAssignedContactDevices: exhaustively searched — the brief's fixture
+// lid=48218 returns a clean "No assigned contact device records were found"
+// business error (code 25000) for both ON HOURS and OFF HOURS, despite
+// Task 2 confirming that lid *does* have an unassigned PAGER device (i.e. it
+// exists but isn't in "assigned" state). Also tried lid=322504 (Aaron) and
+// lid=187535 (Adams) with both cltypes (same clean "not found" result), plus
+// every lid (120) returned by `GetListingsByName "Ad" BEGINS WITH mid_flag
+// ALL` against both cltypes (240 combinations) — every single call returned
+// the same clean business error, never a param/type error (confirming correct
+// wiring), and passing mid 16818 as `lid` correctly returns a *different*
+// "No listing record was found" error, proving the server validates `lid`
+// distinctly from `mid`. No lid in this lab dataset has an assigned contact
+// device in either contact list type, so there is no known-good fixture to
+// assert a positive match against. Per brief: skip rather than invent an id.
+test.skip(
+  "GetAssignedContactDevices: no lid in lab data has an assigned contact device in either cltype (searched 3 named fixture lids + 120 lids from a broad name scan, 246 combinations total; server consistently returns a clean 'no assigned contact device records' business error)",
+  () => {}
+);

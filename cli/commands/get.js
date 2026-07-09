@@ -148,6 +148,18 @@ module.exports = function registerGetCommand(program) {
     });
 
   get
+    .command("assigned-contact-devices <lid>")
+    .description("Get assigned contact devices for a listing")
+    .requiredOption("--cltype <cltype>", "contact list type: ON HOURS or OFF HOURS")
+    .action(async (lid, opts) => {
+      try {
+        await callAndPrint(program.opts(), "GetAssignedContactDevices", {
+          lid, cltype: opts.cltype,
+        });
+      } catch (err) { printError(err); }
+    });
+
+  get
     .command("is-pager-by-dirseq <dirseq>")
     .description("Check whether a directory sequence number belongs to a pager")
     .action(async (dirseq) => {
@@ -291,6 +303,15 @@ module.exports = function registerGetCommand(program) {
       } catch (err) { printError(err); }
     });
 
+  get
+    .command("message-groups <reqlid>")
+    .description("Get message groups visible to a requesting listing")
+    .action(async (reqlid) => {
+      try {
+        await callAndPrint(program.opts(), "GetMessageGroups", { reqlid });
+      } catch (err) { printError(err); }
+    });
+
   // -- On-call subcommands ----------------------------------------------------
 
   get
@@ -317,6 +338,99 @@ module.exports = function registerGetCommand(program) {
     .action(async (mid) => {
       try {
         await callAndPrint(program.opts(), "GetIdsCurrentAssignments", { mid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("oncall-group-roles")
+    .description("Get on-call group roles")
+    .action(async () => {
+      try {
+        await callAndPrint(program.opts(), "GetOncallGroupRoles");
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("id-assignments <mid>")
+    .description("Get the on-call assignments for a messaging ID")
+    .requiredOption("--start-date <start_date>", "date of the earliest assignment to retrieve")
+    .requiredOption("--end-date <end_date>", "date of the latest assignment to retrieve")
+    .requiredOption("--timezone <timezone>", "timezone of the assignments")
+    .action(async (mid, opts) => {
+      try {
+        await callAndPrint(program.opts(), "GetIdsAssignments", {
+          mid, start_date: opts.startDate, end_date: opts.endDate, timezone: opts.timezone,
+        });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("id-assignments-xml <mid>")
+    .description("Get on-call assignments for a messaging ID as XML")
+    .requiredOption("--ocastart <ocastart>", "start of the date range")
+    .requiredOption("--ocaend <ocaend>", "end of the date range")
+    .option("--tz <tz>", "timezone")
+    .action(async (mid, opts) => {
+      try {
+        const params = { mid, ocastart: opts.ocastart, ocaend: opts.ocaend };
+        if (opts.tz) params.tz = opts.tz;
+        await callAndPrint(program.opts(), "GetIdsAssignmentsXml", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("id-curr-assign-xml <mid>")
+    .description("Get current on-call assignment for a messaging ID as XML")
+    .option("--tz <tz>", "timezone")
+    .action(async (mid, opts) => {
+      try {
+        const params = { mid };
+        if (opts.tz) params.tz = opts.tz;
+        await callAndPrint(program.opts(), "GetIdsCurrAssignXml", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("group-assignments-xml <ocmid>")
+    .description("Get group assignments XML for a date range")
+    .requiredOption("--ocastart <ocastart>", "start of the date range")
+    .requiredOption("--ocaend <ocaend>", "end of the date range")
+    .option("--tz <tz>", "timezone")
+    .action(async (ocmid, opts) => {
+      try {
+        const params = { ocmid, ocastart: opts.ocastart, ocaend: opts.ocaend };
+        if (opts.tz) params.tz = opts.tz;
+        await callAndPrint(program.opts(), "GetGroupsAssignmentsXml", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("group-curr-assign-xml <ocmid>")
+    .description("Get current group assignments as XML (with timezone)")
+    .option("--tz <tz>", "timezone")
+    .action(async (ocmid, opts) => {
+      try {
+        const params = { ocmid };
+        if (opts.tz) params.tz = opts.tz;
+        await callAndPrint(program.opts(), "GetGroupsCurrAssignXml", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("current-assignment-lids <name>")
+    .description("Get current assignment listing IDs by group name")
+    .action(async (name) => {
+      try {
+        await callAndPrint(program.opts(), "GetCurrentAssignmentLids", { name });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("current-assignment-with-exceptions <name>")
+    .description("Get current on-call assignment with exceptions by group name")
+    .action(async (name) => {
+      try {
+        await callAndPrint(program.opts(), "GetCurrentAssignmentWithExceptions", { name });
       } catch (err) { printError(err); }
     });
 
