@@ -489,19 +489,37 @@ class SpokService {
     return this.execute("GetAllEventTemplates", { reqlid });
   }
 
-  /** Get event template detail by template ID. */
-  async getEventTemplateDetail(etid: string): Promise<SpokResponse> {
-    return this.execute("GetEventTemplateDetail", { etid });
+  /**
+   * Get event template detail.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evid required — the event template ID.
+   */
+  async getEventTemplateDetail(reqlid: string, evid: string): Promise<SpokResponse> {
+    return this.execute("GetEventTemplateDetail", { reqlid, evid });
   }
 
-  /** Get event activations for a template. */
-  async getEventActivations(etid: string): Promise<SpokResponse> {
-    return this.execute("GetEventActivations", { etid });
+  /**
+   * Get event activations visible to a requesting listing.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param ssflag optional — start/stop flag filter.
+   * @param actdate optional — activation date filter.
+   */
+  async getEventActivations(
+    reqlid: string, ssflag?: string, actdate?: string
+  ): Promise<SpokResponse> {
+    const params: Record<string, string> = { reqlid };
+    if (ssflag) params.ssflag = ssflag;
+    if (actdate) params.actdate = actdate;
+    return this.execute("GetEventActivations", params);
   }
 
-  /** Get event activation detail by activation ID. */
-  async getEventActivationDetail(eaid: string): Promise<SpokResponse> {
-    return this.execute("GetEventActivationDetail", { eaid });
+  /**
+   * Get event activation detail.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evrseq required — the event activation (response) sequence number.
+   */
+  async getEventActivationDetail(reqlid: string, evrseq: string): Promise<SpokResponse> {
+    return this.execute("GetEventActivationDetail", { reqlid, evrseq });
   }
 
   /** Get on-call assignments for a messaging ID as XML. */
@@ -681,34 +699,56 @@ class SpokService {
     return this.execute("GetWorkHours", { lid });
   }
 
-  /** Get notification status by event activation ID. */
-  async getNotificationStatus(eaid: string): Promise<SpokResponse> {
-    return this.execute("GetNotificationStatus", { eaid });
+  /**
+   * Get the status of a notification step.
+   * @param stepseq required — the notification step sequence number.
+   */
+  async getNotificationStatus(stepseq: string): Promise<SpokResponse> {
+    return this.execute("GetNotificationStatus", { stepseq });
   }
 
-  /** Get notification step queries by event activation ID. */
-  async getNotificationStepQueries(eaid: string): Promise<SpokResponse> {
-    return this.execute("GetNotificationStepQueries", { eaid });
+  /**
+   * Get the queries run for a notification step.
+   * @param rlid required — the requesting operator's listing ID.
+   * @param stepseq required — the notification step sequence number.
+   */
+  async getNotificationStepQueries(rlid: string, stepseq: string): Promise<SpokResponse> {
+    return this.execute("GetNotificationStepQueries", { rlid, stepseq });
   }
 
-  /** Get event status by event activation ID. */
-  async getEventStatus(eaid: string): Promise<SpokResponse> {
-    return this.execute("GetEventStatus", { eaid });
+  /**
+   * Get the current status of an activated event.
+   * @param requestSeqnum required — sequence number of the event whose status is returned.
+   */
+  async getEventStatus(requestSeqnum: string): Promise<SpokResponse> {
+    return this.execute("GetEventStatus", { request_seqnum: requestSeqnum });
   }
 
-  /** Get event template privilege by template ID and listing ID. */
-  async getEventTemplatePrivilege(etid: string, lid: string): Promise<SpokResponse> {
-    return this.execute("GetEventTemplatePrivilege", { etid, lid });
+  /**
+   * Get event template privilege.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evid required — the event template ID.
+   */
+  async getEventTemplatePrivilege(reqlid: string, evid: string): Promise<SpokResponse> {
+    return this.execute("GetEventTemplatePrivilege", { reqlid, evid });
   }
 
-  /** Get recipient count for an event activation. */
-  async getActivationRecipientCount(eaid: string): Promise<SpokResponse> {
-    return this.execute("GetActivationRecipientCount", { eaid });
+  /**
+   * Get recipient count for an event activation.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evrseq required — the event activation (response) sequence number.
+   */
+  async getActivationRecipientCount(reqlid: string, evrseq: string): Promise<SpokResponse> {
+    return this.execute("GetActivationRecipientCount", { reqlid, evrseq });
   }
 
-  /** Get recipient count for an event template. */
-  async getTemplateRecipientCount(etid: string): Promise<SpokResponse> {
-    return this.execute("GetTemplateRecipientCount", { etid });
+  /**
+   * Get recipient count for an event template.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evid required — the event template ID.
+   */
+  async getTemplateRecipientCount(reqlid: string, evid: string): Promise<SpokResponse> {
+    return this.execute("GetTemplateRecipientCount", { reqlid, evid });
   }
 
   /**

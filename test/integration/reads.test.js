@@ -565,3 +565,106 @@ test.skip(
   "GetAssignedContactDevices: no lid in lab data has an assigned contact device in either cltype (searched 3 named fixture lids + 120 lids from a broad name scan, 246 combinations total; server consistently returns a clean 'no assigned contact device records' business error)",
   () => {}
 );
+
+// -- Task 8: Events/notifications reads ---------------------------------------
+// Fixture discovery: amcomapi.xml does NOT use `etid`/`eaid` as the wire param
+// names the task brief's shorthand implied — the real IN parameters are
+// `reqlid`+`evid` (event template id) for template-scoped reads and
+// `reqlid`+`evrseq` (event activation/request seqnum) for activation-scoped
+// reads; `GetEventStatus` takes a bare `request_seqnum`; `GetNotificationStatus`
+// takes a bare `stepseq`; `GetNotificationStepQueries` takes `rlid`+`stepseq`.
+// src/index.ts's pre-existing wrappers for GetEventTemplateDetail,
+// GetEventActivations, GetEventActivationDetail, GetEventTemplatePrivilege,
+// GetEventStatus, GetNotificationStatus, GetNotificationStepQueries,
+// GetActivationRecipientCount, and GetTemplateRecipientCount all sent the
+// wrong (shorthand) param names/arity; fixed all nine to match amcomapi.xml
+// verbatim and rebuilt dist. GetActiveNotifications, GetAllEventTemplates, and
+// GetQueryTemplateInfo were already correct from a prior session.
+//
+// reqlid=48218 (the brief's starting fixture) has zero event templates
+// ("No event templates were found...(48218)", code 25001) — a scan of all 120
+// lids returned by `GetListingsByName "Ad" midflag ALL` (plus 48218 and the
+// mid-shaped ids 54361/66755, which correctly error as "no listing record")
+// found exactly 3 lids with real event templates: 13553 (3 templates),
+// 297877, 263279. reqlid=13553 / evid=2471 ("CEI OR REQ Staffing Need Alert")
+// is used below for every template-scoped read.
+//
+// GetEventActivations was run against all 3 template-owning reqlids, all 6
+// grlids with ACTIVATOR/OWNER privilege on evid 2471 (182201, 111846, 185215,
+// 89513, 216389, 88327), and reqlid=48218 — every one returned the same clean
+// "No event request were found...that match the filtering requirements"
+// business error (code 25000, GetEventActivations' own wiring is correct;
+// there are simply no live event activations in this lab dataset). That is
+// expected: activating an event sends notifications, and the global
+// no-live-sends constraint means nothing in this environment has ever
+// triggered one. Per the same precedent as GetIdsAssignmentsXml in Task 7, a
+// clean "not found" business response for a real reqlid is a pass, not a
+// skip.
+//
+// Because no event was ever activated, there is no real evrseq/eaid anywhere
+// in the lab to chain into GetEventActivationDetail, GetEventStatus,
+// GetNotificationStatus, GetNotificationStepQueries, or
+// GetActivationRecipientCount — all five are skipped per the brief ("never
+// invent an id"; confirmed with `GetEventActivations` returning zero rows for
+// every candidate reqlid/grlid tried above, so no fixture evrseq exists to
+// discover). GetQueryTemplateInfo is skipped too: no procedure in
+// amcomapi.xml lists/exposes a qseq value, and none of the templates/steps
+// discovered above reference one, so there is nothing to chain from.
+
+itLab("GetAllEventTemplates returns real templates for a known reqlid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetAllEventTemplates", { reqlid: "13553" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("CEI OR REQ Staffing Need Alert"), "expected known evname in result");
+});
+
+itLab("GetActiveNotifications returns the known 'no active notification' business response for a known rlid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetActiveNotifications", { rlid: "48218" });
+  assert.ok(res.error, "expected the known 'no active notification' business response");
+  assert.ok(String(res.error).includes("No active notification found"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});
+
+itLab("GetEventTemplateDetail returns detail for a known reqlid+evid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetEventTemplateDetail", { reqlid: "13553", evid: "2471" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("CEI OR REQ Staffing Need Alert Procedure 1"), "expected known procname in result");
+});
+
+itLab("GetEventTemplatePrivilege returns privileges for a known reqlid+evid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetEventTemplatePrivilege", { reqlid: "13553", evid: "2471" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(JSON.stringify(res.data).includes("\"grlid\":\"13553\""), "expected the owning grlid 13553 in result");
+});
+
+itLab("GetTemplateRecipientCount returns a count for a known reqlid+evid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetTemplateRecipientCount", { reqlid: "13553", evid: "2471" });
+  assert.ok(!res.error, `unexpected error: ${res.error}`);
+  assert.ok(res.data && res.data.rcptcnt, "expected an rcptcnt in result");
+});
+
+itLab("GetEventActivations returns the known 'no event request' business response for a known reqlid", async () => {
+  const svc = lab();
+  const res = await svc.execute("GetEventActivations", { reqlid: "13553" });
+  assert.ok(res.error, "expected the known 'no event request' business response");
+  assert.ok(String(res.error).includes("No event request were found"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});
+
+for (const [rpc, reason] of [
+  ["GetEventActivationDetail", "needs a real evrseq from an activated event"],
+  ["GetEventStatus", "needs a real request_seqnum (evrseq) from an activated event"],
+  ["GetNotificationStatus", "needs a real stepseq from an activated event's notification procedure"],
+  ["GetNotificationStepQueries", "needs a real stepseq from an activated event's notification procedure"],
+  ["GetActivationRecipientCount", "needs a real evrseq from an activated event"],
+  ["GetQueryTemplateInfo", "needs a real qseq; no procedure in amcomapi.xml lists/exposes one"],
+]) {
+  test.skip(
+    `${rpc}: no live event has ever been activated in this lab dataset (GetEventActivations returned zero rows for every reqlid/grlid tried), so ${reason} does not exist to discover`,
+    () => {}
+  );
+}

@@ -809,4 +809,119 @@ module.exports = function registerGetCommand(program) {
         await callAndPrint(program.opts(), "GetStatusesByUdf", params);
       } catch (err) { printError(err); }
     });
+
+  // -- Events / notifications subcommands ---------------------------------------
+
+  get
+    .command("active-notifications <rlid>")
+    .description("Get currently-active notifications visible to a requesting listing")
+    .action(async (rlid) => {
+      try {
+        await callAndPrint(program.opts(), "GetActiveNotifications", { rlid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("event-templates <reqlid>")
+    .description("Get all event templates visible to a requesting listing")
+    .action(async (reqlid) => {
+      try {
+        await callAndPrint(program.opts(), "GetAllEventTemplates", { reqlid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("event-template-detail <reqlid> <evid>")
+    .description("Get event template detail")
+    .action(async (reqlid, evid) => {
+      try {
+        await callAndPrint(program.opts(), "GetEventTemplateDetail", { reqlid, evid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("event-activations <reqlid>")
+    .description("Get event activations visible to a requesting listing")
+    .option("--ssflag <ssflag>", "start/stop flag filter")
+    .option("--actdate <actdate>", "activation date filter")
+    .action(async (reqlid, opts) => {
+      try {
+        const params = { reqlid };
+        if (opts.ssflag) params.ssflag = opts.ssflag;
+        if (opts.actdate) params.actdate = opts.actdate;
+        await callAndPrint(program.opts(), "GetEventActivations", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("event-activation-detail <reqlid> <evrseq>")
+    .description("Get event activation detail")
+    .action(async (reqlid, evrseq) => {
+      try {
+        await callAndPrint(program.opts(), "GetEventActivationDetail", { reqlid, evrseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("event-template-privilege <reqlid> <evid>")
+    .description("Get event template privilege")
+    .action(async (reqlid, evid) => {
+      try {
+        await callAndPrint(program.opts(), "GetEventTemplatePrivilege", { reqlid, evid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("event-status <request_seqnum>")
+    .description("Get the current status of an activated event")
+    .action(async (requestSeqnum) => {
+      try {
+        await callAndPrint(program.opts(), "GetEventStatus", { request_seqnum: requestSeqnum });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("notification-status <stepseq>")
+    .description("Get the status of a notification step")
+    .action(async (stepseq) => {
+      try {
+        await callAndPrint(program.opts(), "GetNotificationStatus", { stepseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("notification-step-queries <rlid> <stepseq>")
+    .description("Get the queries run for a notification step")
+    .action(async (rlid, stepseq) => {
+      try {
+        await callAndPrint(program.opts(), "GetNotificationStepQueries", { rlid, stepseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("activation-recipient-count <reqlid> <evrseq>")
+    .description("Get recipient count for an event activation")
+    .action(async (reqlid, evrseq) => {
+      try {
+        await callAndPrint(program.opts(), "GetActivationRecipientCount", { reqlid, evrseq });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("template-recipient-count <reqlid> <evid>")
+    .description("Get recipient count for an event template")
+    .action(async (reqlid, evid) => {
+      try {
+        await callAndPrint(program.opts(), "GetTemplateRecipientCount", { reqlid, evid });
+      } catch (err) { printError(err); }
+    });
+
+  get
+    .command("query-template-info <reqlid> <qseq>")
+    .description("Get query template info")
+    .action(async (reqlid, qseq) => {
+      try {
+        await callAndPrint(program.opts(), "GetQueryTemplateInfo", { reqlid, qseq });
+      } catch (err) { printError(err); }
+    });
 };
