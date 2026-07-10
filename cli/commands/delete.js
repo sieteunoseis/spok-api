@@ -62,6 +62,40 @@ module.exports = function registerDeleteCommand(program) {
     });
 
   del
+    .command("phone-number <lid>")
+    .description("Delete a phone number from a listing's directory phone list")
+    .option("--phone-number <phoneNumber>", "phone number to match (optional)")
+    .option("--phone-type <phoneType>", "phone type to match (optional)")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { lid };
+        if (opts.phoneNumber) params.phone_number = opts.phoneNumber;
+        if (opts.phoneType) params.phone_type = opts.phoneType;
+        const result = await callAmcom(globalOpts, "DeleteListingDirectoryPhone", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
+    .command("email-by-lid <lid>")
+    .description("Delete an email address by listing ID")
+    .requiredOption("--emaddr <emaddr>", "email address to delete")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeleteEmailAddressByLid", {
+          lid, emaddr: opts.emaddr,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
     .command("directory")
     .description("Delete a listing directory entry")
     .requiredOption("--lid <lid>", "listing ID")

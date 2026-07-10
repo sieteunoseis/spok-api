@@ -146,6 +146,29 @@ module.exports = function registerAddCommand(program) {
     });
 
   add
+    .command("phone-number <mid>")
+    .description("Add a phone number for a specified user (messaging ID)")
+    .requiredOption("--phone-number <phoneNumber>", "phone number to add")
+    .requiredOption("--phone-number-type <phoneNumberType>", "phone number type")
+    .requiredOption("--published-flag <publishedFlag>", "T or F: whether the phone number is published")
+    .requiredOption("--display-order <displayOrder>", "display order")
+    .action(async (mid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "AddPhoneNumber", {
+          mid,
+          phone_number: opts.phoneNumber,
+          phone_number_type: opts.phoneNumberType,
+          published_flag: opts.publishedFlag,
+          display_order: opts.displayOrder,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
     .command("org")
     .description("Add a new organization")
     .requiredOption("--orgname <orgname>", "organization name")

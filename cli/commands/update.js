@@ -69,6 +69,43 @@ module.exports = function registerUpdateCommand(program) {
     });
 
   update
+    .command("email-by-lid <lid>")
+    .description("Update an email address by listing ID")
+    .requiredOption("--old-emaddr <oldEmaddr>", "current email address")
+    .requiredOption("--new-emaddr <newEmaddr>", "new email address")
+    .option("--dorder <dorder>", "display order")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { lid, old_emaddr: opts.oldEmaddr, new_emaddr: opts.newEmaddr };
+        if (opts.dorder) params.dorder = opts.dorder;
+        const result = await callAmcom(globalOpts, "UpdateEmailAddressByLid", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
+    .command("pager <pid>")
+    .description("Update pager properties")
+    .option("--cos <cos>", "class of service")
+    .option("--model <model>", "pager model")
+    .option("--proute <proute>", "pager route")
+    .option("--remark <remark>", "remark")
+    .action(async (pid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = buildParams(opts);
+        params.pid = pid;
+        const result = await callAmcom(globalOpts, "UpdatePager", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
     .command("org <orgseq>")
     .description("Update an existing organization")
     .option("--orgname <orgname>", "organization name")

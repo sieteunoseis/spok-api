@@ -41,6 +41,23 @@ module.exports = function registerAssignCommand(program) {
     });
 
   assign
+    .command("pager-by-lid <lid>")
+    .description("Assign a pager to a listing by listing ID")
+    .requiredOption("--pid <pid>", "pager ID")
+    .option("--dorder <dorder>", "display order")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { lid, pid: opts.pid };
+        if (opts.dorder) params.dorder = opts.dorder;
+        const result = await callAmcom(globalOpts, "AssignPagerByLid", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  assign
     .command("email")
     .description("Assign an email address to a user")
     .requiredOption("--mid <mid>", "messaging ID")

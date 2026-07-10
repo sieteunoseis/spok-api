@@ -829,9 +829,17 @@ class SpokService {
     return this.execute("AddPhoneNumber", params);
   }
 
-  /** Delete a phone number from a listing directory entry. */
-  async deleteListingDirectoryPhone(lid: string, dirseq: string): Promise<SpokResponse> {
-    return this.execute("DeleteListingDirectoryPhone", { lid, dirseq });
+  /**
+   * Delete a phone number from a listing's directory phone list.
+   * @param lid required — listing ID.
+   * @param phoneNumber optional — phone number to match (per amcomapi.xml `phone_number`, nullable="true").
+   * @param phoneType optional — phone type to match (per amcomapi.xml `phone_type`, nullable="true").
+   */
+  async deleteListingDirectoryPhone(lid: string, phoneNumber?: string, phoneType?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { lid };
+    if (phoneNumber) params.phone_number = phoneNumber;
+    if (phoneType) params.phone_type = phoneType;
+    return this.execute("DeleteListingDirectoryPhone", params);
   }
 
   /** Delete an email address by listing ID. */
@@ -844,10 +852,15 @@ class SpokService {
     return this.execute("UpdateEmailAddressByLid", { lid, old_emaddr: oldEmaddr, new_emaddr: newEmaddr });
   }
 
-  /** Assign a pager to a listing by listing ID. */
-  async assignPagerByLid(lid: string, pagerId: string, displayOrder?: string): Promise<SpokResponse> {
-    const params: Record<string, string> = { lid, pager_id: pagerId };
-    if (displayOrder) params.display_order = displayOrder;
+  /**
+   * Assign a pager to a listing by listing ID.
+   * @param lid required — listing ID.
+   * @param pid required — pager ID (per amcomapi.xml `pid`, nullable="false").
+   * @param dorder optional — display order (per amcomapi.xml `dorder`, nullable="true").
+   */
+  async assignPagerByLid(lid: string, pid: string, dorder?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { lid, pid };
+    if (dorder) params.dorder = dorder;
     return this.execute("AssignPagerByLid", params);
   }
 
