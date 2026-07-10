@@ -284,8 +284,12 @@ class SpokService {
   }
 
   /** Get all on-call assignments by messaging ID. */
-  async getIdsAssignments(mid: string): Promise<SpokResponse> {
-    return this.execute("GetIdsAssignments", { mid });
+  async getIdsAssignments(
+    mid: string, startDate: string, endDate: string, timezone: string
+  ): Promise<SpokResponse> {
+    return this.execute("GetIdsAssignments", {
+      mid, start_date: startDate, end_date: endDate, timezone,
+    });
   }
 
   /** Get current on-call assignment with exceptions by group name. */
@@ -365,6 +369,799 @@ class SpokService {
   /** Get all titles. */
   async getTitles(): Promise<SpokResponse> {
     return this.execute("GetTitles");
+  }
+
+  // ─── High-priority CLOB reads ──────────────────────────────────────────────
+
+  /**
+   * Search listings by last name (CLOB output — bulk-safe).
+   * @param searchType required by the server — one of EXACT, BEGINS WITH, ENDS WITH, CONTAINS.
+   */
+  async getListingsByLastName(lname: string, searchType: string, midFlag?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { lname, search_type: searchType };
+    if (midFlag) params.mid_flag = midFlag;
+    return this.execute("GetListingsByLastName", params);
+  }
+
+  /**
+   * Get directories by UDF column with search type (CLOB output — bulk-safe).
+   * @param lid optional — restrict search to a listing ID (amcomapi.xml `lid`, nullable="true").
+   * @param phtype optional — phone type filter (amcomapi.xml `phtype`, nullable="true").
+   */
+  async getDirectoriesByUdf(
+    udfCol: string, udf: string, searchType?: string, lid?: string, phtype?: string
+  ): Promise<SpokResponse> {
+    const params: Record<string, string> = { udf_col: udfCol, udf };
+    if (searchType) params.search_type = searchType;
+    if (lid) params.lid = lid;
+    if (phtype) params.phtype = phtype;
+    return this.execute("GetDirectoriesByUdf", params);
+  }
+
+  /** Get full department list. */
+  async getAllDepartments(): Promise<SpokResponse> {
+    return this.execute("GetAllDepartments");
+  }
+
+  /** Get hierarchical department tree by directory sequence number. */
+  async getDepartmentHierarchy(dirseq: string): Promise<SpokResponse> {
+    return this.execute("GetDepartmentHierarchy", { dirseq });
+  }
+
+  /** Get full address list. */
+  async getAllAddresses(): Promise<SpokResponse> {
+    return this.execute("GetAllAddresses");
+  }
+
+  /**
+   * Get message groups visible to a requesting listing.
+   * @param reqlid required — the requesting operator's listing ID.
+   */
+  async getMessageGroups(reqlid: string): Promise<SpokResponse> {
+    return this.execute("GetMessageGroups", { reqlid });
+  }
+
+  /** Get pager info keyed by listing ID. */
+  async getPagerInfoByLid(lid: string): Promise<SpokResponse> {
+    return this.execute("GetPagerInfoByLid", { lid });
+  }
+
+  /** Get record name by listing ID. */
+  async getRecordNameByLid(lid: string): Promise<SpokResponse> {
+    return this.execute("GetRecordNameByLid", { lid });
+  }
+
+  /** Get record name by messaging ID. */
+  async getRecordNameByMid(mid: string): Promise<SpokResponse> {
+    return this.execute("GetRecordNameByMid", { mid });
+  }
+
+  /** Get record name by pager ID. */
+  async getRecordNameByPid(pid: string): Promise<SpokResponse> {
+    return this.execute("GetRecordNameByPid", { pid });
+  }
+
+  /** Get record name only by messaging ID (fastest name-only lookup). */
+  async getRecordNameOnlyByMid(mid: string): Promise<SpokResponse> {
+    return this.execute("GetRecordNameOnlyByMid", { mid });
+  }
+
+  /** Get listing instruction notes by listing ID. */
+  async getListingInstructions(lid: string): Promise<SpokResponse> {
+    return this.execute("GetListingInstructions", { lid });
+  }
+
+  /** Get instruction info by instruction sequence number. */
+  async getInstructionInfo(seqnum: string): Promise<SpokResponse> {
+    return this.execute("GetInstructionInfo", { seqnum });
+  }
+
+  /** Get a shared listing instruction by instruction sequence number. */
+  async getSharedListingInstruction(seqnum: string): Promise<SpokResponse> {
+    return this.execute("GetSharedListingInstruction", { seqnum });
+  }
+
+  /** Get status code reference table. */
+  async getStatusCodes(): Promise<SpokResponse> {
+    return this.execute("GetStatusCodes");
+  }
+
+  /**
+   * Get paging info by name or messaging ID.
+   * All three params are optional per amcomapi.xml (`lname`, `fname`, `mid` all nullable="true");
+   * callers should supply at least one to get a useful result.
+   * @param mid optional — messaging ID.
+   * @param lname optional — last name.
+   * @param fname optional — first name.
+   */
+  async getPagingInfo(mid?: string, lname?: string, fname?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = {};
+    if (lname) params.lname = lname;
+    if (fname) params.fname = fname;
+    if (mid) params.mid = mid;
+    return this.execute("GetPagingInfo", params);
+  }
+
+  /** Get pager carrier/COS list. */
+  async getPagerCoses(): Promise<SpokResponse> {
+    return this.execute("GetPagerCoses");
+  }
+
+  /** Get pager model list. */
+  async getPagerModels(): Promise<SpokResponse> {
+    return this.execute("GetPagerModels");
+  }
+
+  /**
+   * Get currently-active notifications visible to a requesting listing.
+   * @param rlid required — the requesting operator's listing ID.
+   */
+  async getActiveNotifications(rlid: string): Promise<SpokResponse> {
+    return this.execute("GetActiveNotifications", { rlid });
+  }
+
+  /**
+   * Get all event templates visible to a requesting listing.
+   * @param reqlid required — the requesting operator's listing ID.
+   */
+  async getAllEventTemplates(reqlid: string): Promise<SpokResponse> {
+    return this.execute("GetAllEventTemplates", { reqlid });
+  }
+
+  /**
+   * Get event template detail.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evid required — the event template ID.
+   */
+  async getEventTemplateDetail(reqlid: string, evid: string): Promise<SpokResponse> {
+    return this.execute("GetEventTemplateDetail", { reqlid, evid });
+  }
+
+  /**
+   * Get event activations visible to a requesting listing.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param ssflag optional — start/stop flag filter.
+   * @param actdate optional — activation date filter.
+   */
+  async getEventActivations(
+    reqlid: string, ssflag?: string, actdate?: string
+  ): Promise<SpokResponse> {
+    const params: Record<string, string> = { reqlid };
+    if (ssflag) params.ssflag = ssflag;
+    if (actdate) params.actdate = actdate;
+    return this.execute("GetEventActivations", params);
+  }
+
+  /**
+   * Get event activation detail.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evrseq required — the event activation (response) sequence number.
+   */
+  async getEventActivationDetail(reqlid: string, evrseq: string): Promise<SpokResponse> {
+    return this.execute("GetEventActivationDetail", { reqlid, evrseq });
+  }
+
+  /** Get on-call assignments for a messaging ID as XML. */
+  async getIdsAssignmentsXml(
+    mid: string, ocastart: string, ocaend: string, tz: string
+  ): Promise<SpokResponse> {
+    return this.execute("GetIdsAssignmentsXml", { mid, ocastart, ocaend, tz });
+  }
+
+  /** Get current on-call assignment for a messaging ID as XML. */
+  async getIdsCurrAssignXml(mid: string, tz: string): Promise<SpokResponse> {
+    return this.execute("GetIdsCurrAssignXml", { mid, tz });
+  }
+
+  // ─── Additional reads (contacts, devices, status) ──────────────────────────
+
+  /** Get all email addresses by listing ID. */
+  async getEmailAddresses(lid: string): Promise<SpokResponse> {
+    return this.execute("GetEmailAddresses", { lid });
+  }
+
+  /** Get email address by listing ID. */
+  async getEmailAddressByLid(lid: string): Promise<SpokResponse> {
+    return this.execute("GetEmailAddressByLid", { lid });
+  }
+
+  /** Get email address by listing ID and display order. */
+  async getEmailAddressByOrder(lid: string, dorder: string): Promise<SpokResponse> {
+    return this.execute("GetEmailAddressByOrder", { lid, dorder });
+  }
+
+  /** Get email address(es) by caller ID. */
+  async getCallerEmailAddress(cid: string): Promise<SpokResponse> {
+    return this.execute("GetCallerEmailAddress", { cid });
+  }
+
+  /** Get alternate phone by messaging ID. */
+  async getAlternatePhone(mid: string): Promise<SpokResponse> {
+    return this.execute("GetAlternatePhone", { mid });
+  }
+
+  /**
+   * Get phone number(s) of a specified user.
+   * @param mid required — messaging ID of the user.
+   * @param phoneNumberType optional — a specific phone number type to filter to.
+   */
+  async getPhoneNumber(mid: string, phoneNumberType?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { mid };
+    if (phoneNumberType) params.phone_number_type = phoneNumberType;
+    return this.execute("GetPhoneNumber", params);
+  }
+
+  /**
+   * Get phone number(s) of a specified user using listing_id.
+   * @param lid required — listing ID of the user.
+   * @param phoneNumberType optional — a specific phone number type to filter to.
+   */
+  async getPhoneNumberByLid(lid: string, phoneNumberType?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { lid };
+    if (phoneNumberType) params.phone_number_type = phoneNumberType;
+    return this.execute("GetPhoneNumberByLid", params);
+  }
+
+  /** Get address type reference list. */
+  async getAddressTypes(): Promise<SpokResponse> {
+    return this.execute("GetAddressTypes");
+  }
+
+  /** Get directory type reference list. */
+  async getDirectoryTypes(): Promise<SpokResponse> {
+    return this.execute("GetDirectoryTypes");
+  }
+
+  /**
+   * Get profile specialties for a listing.
+   * @param irFid required — the listing/feed ID to look up specialties for.
+   */
+  async getProfileSpecialties(irFid: string): Promise<SpokResponse> {
+    return this.execute("GetProfileSpecialties", { ir_fid: irFid });
+  }
+
+  /**
+   * Get assigned contact devices for a listing.
+   * @param lid required — the listing ID.
+   * @param cltype required — the contact list type: "ON HOURS" or "OFF HOURS".
+   */
+  async getAssignedContactDevices(lid: string, cltype: string): Promise<SpokResponse> {
+    return this.execute("GetAssignedContactDevices", { lid, cltype });
+  }
+
+  /**
+   * Get unassigned contact devices for a listing.
+   * @param lid required — the listing ID.
+   * @param cltype required — the contact list type: "ON HOURS" or "OFF HOURS".
+   */
+  async getUnassignedContactDevices(lid: string, cltype: string): Promise<SpokResponse> {
+    return this.execute("GetUnassignedContactDevices", { lid, cltype });
+  }
+
+  /** Get page routes reference list. */
+  async getPageRoutes(): Promise<SpokResponse> {
+    return this.execute("GetPageRoutes");
+  }
+
+  /** Check whether a directory sequence number belongs to a pager. */
+  async isPagerByDirectorySeqnum(dirseq: string): Promise<SpokResponse> {
+    return this.execute("IsPagerByDirectorySeqnum", { dirseq });
+  }
+
+  /**
+   * Check whether a listing ID + phone number combination belongs to a pager.
+   * @param lid required — the listing ID.
+   * @param phnum required — the phone number to check.
+   */
+  async isPagerByListingId(lid: string, phnum: string): Promise<SpokResponse> {
+    return this.execute("IsPagerByListingId", { lid, phnum });
+  }
+
+  /** Check whether a phone number belongs to a pager. */
+  async isPagerByPhone(phnum: string): Promise<SpokResponse> {
+    return this.execute("IsPagerByPhone", { phnum });
+  }
+
+  /** Get current status by messaging ID. */
+  async getStatus(mid: string): Promise<SpokResponse> {
+    return this.execute("GetStatus", { mid });
+  }
+
+  /** Get ID status by messaging ID. */
+  async getIdStatus(mid: string): Promise<SpokResponse> {
+    return this.execute("GetIdStatus", { mid });
+  }
+
+  /** Get statuses by employee ID. */
+  async getStatusesByEid(eid: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByEid", { eid });
+  }
+
+  /** Get statuses by feed ID. */
+  async getStatusesByFeedId(fid: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByFeedId", { fid });
+  }
+
+  /**
+   * Get statuses by last name.
+   * @param searchType required — one of EXACT, BEGINS WITH, ENDS WITH, CONTAINS.
+   */
+  async getStatusesByLastName(lname: string, searchType: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByLastName", { lname, search_type: searchType });
+  }
+
+  /** Get statuses updated on or after a date (YYYY-MM-DD). */
+  async getStatusesByLatestDate(date: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByLatestDate", { date });
+  }
+
+  /**
+   * Get statuses by name.
+   * @param searchType required — one of EXACT, BEGINS WITH, ENDS WITH, CONTAINS.
+   */
+  async getStatusesByName(name: string, searchType: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByName", { name, search_type: searchType });
+  }
+
+  /** Get statuses by SSN. */
+  async getStatusesBySsn(ssn: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesBySsn", { ssn });
+  }
+
+  /** Get statuses by user-defined field. */
+  async getStatusesByUdf(udfCol: string, udf: string): Promise<SpokResponse> {
+    return this.execute("GetStatusesByUdf", { udf_col: udfCol, udf });
+  }
+
+  /** Get work hours by listing ID. */
+  async getWorkHours(lid: string): Promise<SpokResponse> {
+    return this.execute("GetWorkHours", { lid });
+  }
+
+  /**
+   * Get the status of a notification step.
+   * @param stepseq required — the notification step sequence number.
+   */
+  async getNotificationStatus(stepseq: string): Promise<SpokResponse> {
+    return this.execute("GetNotificationStatus", { stepseq });
+  }
+
+  /**
+   * Get the queries run for a notification step.
+   * @param rlid required — the requesting operator's listing ID.
+   * @param stepseq required — the notification step sequence number.
+   */
+  async getNotificationStepQueries(rlid: string, stepseq: string): Promise<SpokResponse> {
+    return this.execute("GetNotificationStepQueries", { rlid, stepseq });
+  }
+
+  /**
+   * Get the current status of an activated event.
+   * @param requestSeqnum required — sequence number of the event whose status is returned.
+   */
+  async getEventStatus(requestSeqnum: string): Promise<SpokResponse> {
+    return this.execute("GetEventStatus", { request_seqnum: requestSeqnum });
+  }
+
+  /**
+   * Get event template privilege.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evid required — the event template ID.
+   */
+  async getEventTemplatePrivilege(reqlid: string, evid: string): Promise<SpokResponse> {
+    return this.execute("GetEventTemplatePrivilege", { reqlid, evid });
+  }
+
+  /**
+   * Get recipient count for an event activation.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evrseq required — the event activation (response) sequence number.
+   */
+  async getActivationRecipientCount(reqlid: string, evrseq: string): Promise<SpokResponse> {
+    return this.execute("GetActivationRecipientCount", { reqlid, evrseq });
+  }
+
+  /**
+   * Get recipient count for an event template.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param evid required — the event template ID.
+   */
+  async getTemplateRecipientCount(reqlid: string, evid: string): Promise<SpokResponse> {
+    return this.execute("GetTemplateRecipientCount", { reqlid, evid });
+  }
+
+  /**
+   * Get query template info.
+   * @param reqlid required — the requesting operator's listing ID.
+   * @param qseq required — the query sequence number.
+   */
+  async getQueryTemplateInfo(reqlid: string, qseq: string): Promise<SpokResponse> {
+    return this.execute("GetQueryTemplateInfo", { reqlid, qseq });
+  }
+
+  // ─── Monitoring ────────────────────────────────────────────────────────────
+
+  /** Get event detail for a monitored event. */
+  async monitorEventDetail(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("MonitorEventDetail", params);
+  }
+
+  /** Get event status for a monitored event. */
+  async monitorEventStatus(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("MonitorEventStatus", params);
+  }
+
+  /** Get event status summary for a monitored event. */
+  async monitorEventStatusSummary(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("MonitorEventStatusSummary", params);
+  }
+
+  /** Get procedure status summary for a monitored event. */
+  async monitorProcStatusSummary(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("MonitorProcStatusSummary", params);
+  }
+
+  /** Get step responses for a monitored event. */
+  async monitorStepResponses(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("MonitorStepResponses", params);
+  }
+
+  /** Get step status summary for a monitored event. */
+  async monitorStepStatusSummary(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("MonitorStepStatusSummary", params);
+  }
+
+  // ─── Writes — people, listings, devices ───────────────────────────────────
+
+  /** Delete a person listing by listing ID. */
+  async deletePerson(lid: string): Promise<SpokResponse> {
+    return this.execute("DeletePerson", { lid });
+  }
+
+  /** Enable or disable a listing for a given module. */
+  async setListingEnabled(lid: string, module: string, eflag: string): Promise<SpokResponse> {
+    return this.execute("SetListingEnabled", { lid, module, eflag });
+  }
+
+  /** Update the messaging ID on a listing. */
+  async updateMessagingId(lid: string, mid: string): Promise<SpokResponse> {
+    return this.execute("UpdateMessagingId", { lid, mid });
+  }
+
+  /** Assign a role to a listing. */
+  async assignRole(lid: string, role: string): Promise<SpokResponse> {
+    return this.execute("AssignRole", { lid, role });
+  }
+
+  /** Assign message priorities to a listing. */
+  async assignMessagePriorities(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AssignMessagePriorities", params);
+  }
+
+  /** Assign group limits to a listing. */
+  async assignGroupLimits(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AssignGroupLimits", params);
+  }
+
+  /** Add a phone number to a listing. */
+  async addPhoneNumber(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddPhoneNumber", params);
+  }
+
+  /**
+   * Delete a phone number from a listing's directory phone list.
+   * @param lid required — listing ID.
+   * @param phoneNumber optional — phone number to match (per amcomapi.xml `phone_number`, nullable="true").
+   * @param phoneType optional — phone type to match (per amcomapi.xml `phone_type`, nullable="true").
+   */
+  async deleteListingDirectoryPhone(lid: string, phoneNumber?: string, phoneType?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { lid };
+    if (phoneNumber) params.phone_number = phoneNumber;
+    if (phoneType) params.phone_type = phoneType;
+    return this.execute("DeleteListingDirectoryPhone", params);
+  }
+
+  /** Delete an email address by listing ID. */
+  async deleteEmailAddressByLid(lid: string, emaddr: string): Promise<SpokResponse> {
+    return this.execute("DeleteEmailAddressByLid", { lid, emaddr });
+  }
+
+  /** Update an email address by listing ID. */
+  async updateEmailAddressByLid(lid: string, oldEmaddr: string, newEmaddr: string): Promise<SpokResponse> {
+    return this.execute("UpdateEmailAddressByLid", { lid, old_emaddr: oldEmaddr, new_emaddr: newEmaddr });
+  }
+
+  /**
+   * Assign a pager to a listing by listing ID.
+   * @param lid required — listing ID.
+   * @param pid required — pager ID (per amcomapi.xml `pid`, nullable="false").
+   * @param dorder optional — display order (per amcomapi.xml `dorder`, nullable="true").
+   */
+  async assignPagerByLid(lid: string, pid: string, dorder?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { lid, pid };
+    if (dorder) params.dorder = dorder;
+    return this.execute("AssignPagerByLid", params);
+  }
+
+  /** Update pager properties. */
+  async updatePager(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdatePager", params);
+  }
+
+  /** Add a listing instruction note. */
+  async addListingInstruction(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddListingInstruction", params);
+  }
+
+  /** Update a listing instruction note. */
+  async updateListingInstruction(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdateListingInstruction", params);
+  }
+
+  /**
+   * Delete a listing instruction by sequence number.
+   * @param seqnum required — the instruction sequence number.
+   * @param lid required — the owning listing ID (server needs both).
+   */
+  async deleteListingInstruction(seqnum: string, lid: string): Promise<SpokResponse> {
+    return this.execute("DeleteListingInstruction", { seqnum, lid });
+  }
+
+  /**
+   * Share a listing instruction with another listing.
+   * @param seqnum required — the instruction sequence number (the family uses seqnum, not instrseq).
+   * @param targetLid required — the listing ID to share the instruction to (per amcomapi.xml
+   *   the wire param is `lid`, same name as the owning-listing param used elsewhere in this
+   *   family; here it identifies the *target* of the share).
+   */
+  async shareListingInstruction(seqnum: string, targetLid: string): Promise<SpokResponse> {
+    return this.execute("ShareListingInstruction", { seqnum, lid: targetLid });
+  }
+
+  /** Change (or create) an exception. */
+  async changeException(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("ChangeException", params);
+  }
+
+  /**
+   * Delete an exception.
+   * @param mid required — messaging ID that owns the exception.
+   * @param exseq required — the exception sequence number to delete.
+   */
+  async deleteException(mid: string, exseq: string): Promise<SpokResponse> {
+    return this.execute("DeleteException", { mid, exseq });
+  }
+
+  /**
+   * Add a personal contact device.
+   * Required params per amcomapi.xml: lid, cltype, devtype, devid. Optional: dorder.
+   */
+  async addPersonalContactDevice(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddPersonalContactDevice", params);
+  }
+
+  /** Update a personal contact device (pdoseq, dorder — both required). */
+  async updatePersonalContactDevice(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdatePersonalContactDevice", params);
+  }
+
+  /**
+   * Delete a personal contact device.
+   * @param pdoseq required — the device sequence number (returned as pdoseq by getAssignedContactDevices).
+   */
+  async deletePersonalContactDevice(pdoseq: string): Promise<SpokResponse> {
+    return this.execute("DeletePersonalContactDevice", { pdoseq });
+  }
+
+  /**
+   * Delete all personal device options for a listing.
+   * @param lid required — per amcomapi.xml the wire param is `lid`, not `mid`
+   *   (live-verified: sending `mid` returns "request does not contain parameter lid").
+   */
+  async deleteAllPersonalDeviceOptions(lid: string): Promise<SpokResponse> {
+    return this.execute("DeleteAllPersonalDeviceOptions", { lid });
+  }
+
+  /** Swap the display order of two personal contact devices (pdoseq, dorder — both required). */
+  async swapPersonalContactDevice(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("SwapPersonalContactDevice", params);
+  }
+
+  /**
+   * Unassign all contact devices from a listing.
+   * @param lid required — per amcomapi.xml the wire param is `lid`, not `mid`
+   *   (live-verified: sending `mid` returns "request does not contain parameter lid").
+   */
+  async unassignContactDevices(lid: string): Promise<SpokResponse> {
+    return this.execute("UnassignContactDevices", { lid });
+  }
+
+  /** Register an AMC device. */
+  async registerAMCDevice(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("RegisterAMCDevice", params);
+  }
+
+  /** Unregister an AMC device. */
+  async unregisterAMCDevice(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UnregisterAMCDevice", params);
+  }
+
+  // ─── Writes — organization ─────────────────────────────────────────────────
+
+  /** Add an organization. */
+  async addOrg(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddOrg", params);
+  }
+
+  /** Update an organization. */
+  async updateOrg(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdateOrg", params);
+  }
+
+  /** Delete an organization by sequence number. */
+  async deleteOrg(orgseq: string): Promise<SpokResponse> {
+    return this.execute("DeleteOrg", { orgseq });
+  }
+
+  /** Insert/update/delete an organization (IUD pattern). */
+  async iudOrg(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("IudOrg", params);
+  }
+
+  /** Add an address. */
+  async addAddress(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddAddress", params);
+  }
+
+  /** Update an address. */
+  async updateAddress(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdateAddress", params);
+  }
+
+  /** Delete an address by sequence number. */
+  async deleteAddress(addseq: string): Promise<SpokResponse> {
+    return this.execute("DeleteAddress", { addseq });
+  }
+
+  /** Insert/update/delete a profile specialty (IUD pattern). */
+  async iudProfileSpecialty(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("IudProfileSpecialty", params);
+  }
+
+  // ─── Writes — on-call ──────────────────────────────────────────────────────
+
+  /** Add an on-call assignment. */
+  async addOncallAssignment(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddOncallAssignment", params);
+  }
+
+  /** Update an on-call assignment. */
+  async updateOncallAssignment(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdateOncallAssignment", params);
+  }
+
+  /** Delete an on-call assignment by sequence number. */
+  async deleteOncallAssignment(assignmentSeqnum: string): Promise<SpokResponse> {
+    return this.execute("DeleteOncallAssignment", { assignment_seqnum: assignmentSeqnum });
+  }
+
+  /** Add an on-call group. */
+  async addOncallGroup(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddOncallGroup", params);
+  }
+
+  /** Update an on-call group. */
+  async updateOncallGroup(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdateOncallGroup", params);
+  }
+
+  /** Delete an on-call group by messaging ID. */
+  async deleteOncallGroup(oncallMid: string): Promise<SpokResponse> {
+    return this.execute("DeleteOncallGroup", { oncall_mid: oncallMid });
+  }
+
+  /** Delete a member from an on-call group. */
+  async deleteOncallGroupMember(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("DeleteOncallGroupMember", params);
+  }
+
+  /** Add a role to an on-call group. */
+  async addOncallGroupRole(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddOncallGroupRole", params);
+  }
+
+  /** Delete a role from an on-call group (composite key: ocmid + ocrole). */
+  async deleteOncallGroupRole(ocmid: string, ocrole: string): Promise<SpokResponse> {
+    return this.execute("DeleteOncallGroupRole", { ocmid, ocrole });
+  }
+
+  // ─── Writes — work hours ───────────────────────────────────────────────────
+
+  /** Add a work hour entry. */
+  async addWorkHour(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddWorkHour", params);
+  }
+
+  /** Update a work hour entry. */
+  async updateWorkHour(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdateWorkHour", params);
+  }
+
+  /**
+   * Delete a work hour entry.
+   * @param lid required — the owning listing ID.
+   * @param phrseq required — the work-hour sequence number (returned as phrseq by getWorkHours).
+   */
+  async deleteWorkHour(lid: string, phrseq: string): Promise<SpokResponse> {
+    return this.execute("DeleteWorkHour", { lid, phrseq });
+  }
+
+  /**
+   * Unassign all work hours from a listing.
+   * @param lid required — the owning listing ID (per amcomapi.xml `UnassignWorkHours`
+   * takes only `lid`, not `mid` — verified live: unassigns all AddWorkHour records for that lid).
+   */
+  async unassignWorkHours(lid: string): Promise<SpokResponse> {
+    return this.execute("UnassignWorkHours", { lid });
+  }
+
+  // ─── Writes — message groups ───────────────────────────────────────────────
+
+  /** Add a static message group. */
+  async addStaticMessageGroup(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("AddStaticMessageGroup", params);
+  }
+
+  /** Update a message group. */
+  async updateMessageGroup(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdateMessageGroup", params);
+  }
+
+  /**
+   * Delete a message group.
+   * @param reqlid required — the requesting listing ID (amcomapi.xml `nullable="false"`;
+   * the pre-existing wrapper was missing this param entirely).
+   * @param grpnum required — the group number to delete.
+   */
+  async deleteMessageGroup(reqlid: string, grpnum: string): Promise<SpokResponse> {
+    return this.execute("DeleteMessageGroup", { reqlid, grpnum });
+  }
+
+  /** Delete a member from a static message group. */
+  async deleteStaticMessageGroupMember(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("DeleteStaticMessageGroupMember", params);
+  }
+
+  /** Update a member in a static message group. */
+  async updateStaticMessageGroupMember(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("UpdateStaticMessageGroupMember", params);
+  }
+
+  // ─── Writes — paging / messaging ───────────────────────────────────────────
+
+  /** Send a message (extended send with additional options beyond SendPage). */
+  async sendMessage(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("SendMessage", params);
+  }
+
+  /** Submit a message for queued delivery. */
+  async submitMessage(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("SubmitMessage", params);
+  }
+
+  /** Send a page to an on-call group. */
+  async sendGroupPage(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("SendGroupPage", params);
+  }
+
+  /** Send a page with an alert flag. */
+  async sendPageWithAlert(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("SendPageWithAlert", params);
+  }
+
+  /** Send a message to a SmartAlert destination. */
+  async sendToSmartAlert(params: Record<string, string>): Promise<SpokResponse> {
+    return this.execute("SendToSmartAlert", params);
   }
 
   // ─── Data Feed ─────────────────────────────────────────────────────────────

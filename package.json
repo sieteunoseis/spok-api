@@ -1,6 +1,6 @@
 {
   "name": "spok-api",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "A library and CLI for Spok SmartSuite TCP API operations",
   "main": "dist/index.js",
   "module": "main.mjs",
@@ -19,7 +19,8 @@
     "build": "tsc",
     "prepare": "npm run build",
     "type-check": "tsc --noEmit",
-    "test": "echo \"No tests yet\""
+    "test": "echo \"No tests yet\"",
+    "test:integration": "node --test test/integration/**/*.test.js"
   },
   "keywords": [
     "spok",

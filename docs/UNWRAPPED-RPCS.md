@@ -1,71 +1,22 @@
 # Unwrapped Amcom RPCs
 
-The Amcom Smart Suite TCP API exposes ~200 stored procedures. This library currently wraps 52 of them — primarily reads/writes against people, pagers, on-call groups, exceptions, and coverage. This document tracks what's still not wrapped, organized by domain and tagged by output buffer type so consumers can plan around the protocol's limits.
+The Amcom Smart Suite TCP API exposes ~270 stored procedures. As of Phase 4 (Task 20) this library wraps 175 of them as typed `SpokService` methods — reads/writes across people, pagers, listings, directories, on-call groups/assignments/roles, exceptions, coverage, work hours, message groups, organizations/addresses, personal contact devices, monitoring, and the core paging/messaging family. Every wrapped RPC also has a corresponding CLI command (`spok-api <verb> <noun>`) and is exercised by a lab-gated integration test under `test/integration/` (`SPOK_LAB=1 node --test test/integration/**/*.test.js`; write tests create and delete only their own throwaway records). This document tracks what's **still** not wrapped, organized by domain.
 
 **Buffer note**: RPCs whose `xml_result` parameter is declared `VARCHAR2` (rather than `CLOB`) silently return `ORA-06502: numeric or value error` when the result set exceeds the ~4 KB PL/SQL buffer. This is a protocol-level limitation, not something the library can fix client-side. Result-heavy queries are only viable on RPCs declared with `CLOB` output.
 
-## High-priority reads (bulk-safe — CLOB output)
+## Now wrapped (Phases 1–4)
 
-These are the most useful unwrapped reads for directory/contact enumeration and lookup work:
+All of the following domains — previously listed here as unwrapped — are done: wrapped in `src/index.ts`, exposed as CLI subcommands, and covered by the lab-gated integration suite (paging sends excepted — see below).
 
-| RPC | Notes |
-|---|---|
-| `GetListingsByLastName` | Like `GetListingsByName` but on last name; supports `search_type`. Useful for alphabet-sweep enumeration with cleaner results than full-name search. |
-| `GetDirectoriesByUdf` | Directory rows by UDF column with `search_type` (CONTAINS / BEGINS WITH / ENDS WITH / EXACT) — the only UDF query path that handles bulk safely. |
-| `GetAllDepartments` | Full department list. |
-| `GetDepartmentHierarchy` | Hierarchical department tree, by `dirseq`. |
-| `GetAllAddresses` | Full address list. |
-| `GetMessageGroups` | All message groups. |
-| `GetPagerInfoByLid` | Pager info keyed by listing ID (lib only has `ByMid`). |
-| `GetRecordNameByLid` / `ByMid` / `ByPid` / `OnlyByMid` | Fast name-only lookups (avoid the full record fetch). |
-| `GetListingInstructions` / `GetInstructionInfo` / `GetSharedListingInstruction` | Listing instruction notes. |
-| `GetStatusCodes` | Status code reference table. |
-| `GetPagingInfo` / `GetPagerCoses` / `GetPagerModels` | Pager configuration metadata. |
-| `GetActiveNotifications` | Currently-active notifications. |
-| `GetAllEventTemplates` / `GetEventTemplateDetail` / `GetEventActivations` / `GetEventActivationDetail` | Event template + activation details. |
-| `GetIdsAssignmentsXml` / `GetIdsCurrAssignXml` | XML-format assignment dumps. |
-
-## Other reads (small-result or single-value)
-
-These return small payloads, single values, or status flags. Wrap as needed:
-
-- **Listings / contacts**: `GetEmailAddresses`, `GetEmailAddressByLid`, `GetEmailAddressByOrder`, `GetCallerEmailAddress`, `GetAlternatePhone`, `GetPhoneNumber`, `GetPhoneNumberByLid`, `GetAddressTypes`, `GetDirectoryTypes`, `GetProfileSpecialties`
-- **Pagers / devices**: `GetAssignedContactDevices`, `GetUnassignedContactDevices`, `GetPageRoutes`, `IsPagerByDirectorySeqnum`, `IsPagerByListingId`, `IsPagerByPhone`
-- **Status**: `GetStatus`, `GetIdStatus`, `GetStatusesByEid`, `GetStatusesByFeedId`, `GetStatusesByLastName`, `GetStatusesByLatestDate`, `GetStatusesByName`, `GetStatusesBySsn`, `GetStatusesByUdf`
-- **Work hours**: `GetWorkHours`
-- **Notifications / events**: `GetNotificationStatus`, `GetNotificationStepQueries`, `GetEventStatus`, `GetEventTemplatePrivilege`, `GetActivationRecipientCount`, `GetTemplateRecipientCount`, `GetQueryTemplateInfo`
-- **Monitoring**: `MonitorEventDetail`, `MonitorEventStatus`, `MonitorEventStatusSummary`, `MonitorProcStatusSummary`, `MonitorStepResponses`, `MonitorStepStatusSummary`
-
-## Writes — listings, contacts, devices
-
-- **People / listings**: `DeletePerson`, `SetListingEnabled`, `UpdateMessagingId`, `AssignRole`, `AssignMessagePriorities`, `AssignGroupLimits`
-- **Phone numbers**: `AddPhoneNumber`, `DeleteListingDirectoryPhone`
-- **Email**: `DeleteEmailAddressByLid`, `UpdateEmailAddressByLid`
-- **Pagers**: `AssignPagerByLid`, `UpdatePager`
-- **Listing instructions**: `AddListingInstruction`, `UpdateListingInstruction`, `DeleteListingInstruction`, `ShareListingInstruction`
-- **Exceptions**: `ChangeException`, `DeleteException`
-- **Personal contact devices**: `AddPersonalContactDevice`, `UpdatePersonalContactDevice`, `DeletePersonalContactDevice`, `DeleteAllPersonalDeviceOptions`, `SwapPersonalContactDevice`, `UnassignContactDevices`, `RegisterAMCDevice`, `UnregisterAMCDevice`
-
-## Writes — organization
-
-- **Orgs**: `AddOrg`, `UpdateOrg`, `DeleteOrg`, `IudOrg`
-- **Addresses**: `AddAddress`, `UpdateAddress`, `DeleteAddress`
-- **Specialty**: `IudProfileSpecialty`
-
-## Writes — on-call
-
-- **Assignments**: `AddOncallAssignment`, `UpdateOncallAssignment`, `DeleteOncallAssignment`
-- **Groups**: `AddOncallGroup`, `UpdateOncallGroup`, `DeleteOncallGroup`, `DeleteOncallGroupMember`
-- **Roles**: `AddOncallGroupRole`, `DeleteOncallGroupRole`
-
-## Writes — work hours
-
-- `AddWorkHour`, `UpdateWorkHour`, `DeleteWorkHour`, `UnassignWorkHours`
-
-## Writes — message groups
-
-- `AddStaticMessageGroup`, `UpdateMessageGroup`, `DeleteMessageGroup`
-- `DeleteStaticMessageGroupMember`, `UpdateStaticMessageGroupMember`
+- **High-priority bulk reads**: `GetListingsByLastName`, `GetDirectoriesByUdf` (now also accepts optional `lid`/`phtype` filters), `GetAllDepartments`, `GetDepartmentHierarchy`, `GetAllAddresses`, `GetMessageGroups`, `GetPagerInfoByLid` (`ByMid` also wrapped), `GetRecordNameByLid`/`ByMid`/`ByPid`/`OnlyByMid`, `GetListingInstructions`/`GetInstructionInfo`/`GetSharedListingInstruction`, `GetStatusCodes`, `GetPagingInfo` (now accepts optional `lname`/`fname` in addition to `mid`), `GetPagerCoses`, `GetPagerModels`, `GetActiveNotifications`, `GetAllEventTemplates`/`GetEventTemplateDetail`/`GetEventActivations`/`GetEventActivationDetail`, `GetIdsAssignmentsXml`/`GetIdsCurrAssignXml`.
+- **Other reads**: all listings/contacts (`GetEmailAddresses`, `GetEmailAddressByLid`, `GetEmailAddressByOrder`, `GetCallerEmailAddress`, `GetAlternatePhone`, `GetPhoneNumber`, `GetPhoneNumberByLid`, `GetAddressTypes`, `GetDirectoryTypes`, `GetProfileSpecialties`), pagers/devices (`GetAssignedContactDevices`, `GetUnassignedContactDevices`, `GetPageRoutes`, `IsPagerByDirectorySeqnum`, `IsPagerByListingId`, `IsPagerByPhone`), status (`GetStatus`, `GetIdStatus`, `GetStatusesByEid`, `GetStatusesByFeedId`, `GetStatusesByLastName`, `GetStatusesByLatestDate`, `GetStatusesByName`, `GetStatusesBySsn`, `GetStatusesByUdf`), work hours (`GetWorkHours`), notifications/events (`GetNotificationStatus`, `GetNotificationStepQueries`, `GetEventStatus`, `GetEventTemplatePrivilege`, `GetActivationRecipientCount`, `GetTemplateRecipientCount`, `GetQueryTemplateInfo`), and monitoring (`MonitorEventDetail`, `MonitorEventStatus`, `MonitorEventStatusSummary`, `MonitorProcStatusSummary`, `MonitorStepResponses`, `MonitorStepStatusSummary`).
+- **Writes — listings, contacts, devices**: `DeletePerson`, `SetListingEnabled`, `UpdateMessagingId`, `AssignRole`, `AssignMessagePriorities`, `AssignGroupLimits`, `AddPhoneNumber`, `DeleteListingDirectoryPhone`, `DeleteEmailAddressByLid`, `UpdateEmailAddressByLid`, `AssignPagerByLid`, `UpdatePager`, `AddListingInstruction`, `UpdateListingInstruction`, `DeleteListingInstruction`, `ShareListingInstruction`, `ChangeException`, `DeleteException`, `AddPersonalContactDevice`, `UpdatePersonalContactDevice`, `DeletePersonalContactDevice`, `DeleteAllPersonalDeviceOptions`, `SwapPersonalContactDevice`, `UnassignContactDevices`, `RegisterAMCDevice`, `UnregisterAMCDevice`.
+- **Writes — organization**: `AddOrg`, `UpdateOrg`, `DeleteOrg`, `IudOrg`, `AddAddress`, `UpdateAddress`, `DeleteAddress`, `IudProfileSpecialty`.
+- **Writes — on-call**: `AddOncallAssignment`, `UpdateOncallAssignment`, `DeleteOncallAssignment`, `AddOncallGroup`, `UpdateOncallGroup`, `DeleteOncallGroup`, `DeleteOncallGroupMember`, `AddOncallGroupMember`, `AddOncallGroupRole`, `DeleteOncallGroupRole`.
+- **Writes — work hours**: `AddWorkHour`, `UpdateWorkHour`, `DeleteWorkHour`, `UnassignWorkHours`.
+- **Writes — message groups**: `AddStaticMessageGroup`, `AddStaticMessageGroupMember`, `UpdateMessageGroup`, `DeleteMessageGroup`, `DeleteStaticMessageGroupMember`, `UpdateStaticMessageGroupMember`.
+- **Writes — paging/messaging**: `SendPage`, `ChangeStatus`, and `SendMessage`/`SubmitMessage`/`SendGroupPage`/`SendPageWithAlert`/`SendToSmartAlert` — the latter 5 are fully wired (library method + CLI command + `it.skip`'d integration test documenting the exact params) but **never live-called**, per the standing "no page/notification sends, ever" constraint. Run `test/integration/writes-paging.test.js` to confirm they show as skipped, never executed.
+- **DataFeed — people**: `DataFeedAddPerson`, `DataFeedUpdatePerson` (the `DataFeedDeleteProfile*`/`DataFeedAddProfile*`/`DataFeedUpdateProfile*` sub-families below remain unwrapped).
 
 ## Writes — events & step templates
 
@@ -79,17 +30,11 @@ Largest unwrapped subsystem after DataFeed. Used for emergency notification / ev
 - **Step activations**: `AddStepActivationMessageGroup`, `AddStepActivationRecipient`, `AppendToStepActivationRecipients`, `DeleteStepActivationMessageGroup`, `DeleteStepActivationRecipient`, `UpdateStepActivation`, `UpdateStepActivationYNQuestion`, `ReplaceStepActivationAllMessageGroups`, `ReplaceStepActivationAllRecipients`
 - **Validation / response**: `ValidateStepRecipient`, `ValidateStepSeqnum`, `InitiateRecipientResponse`, `LogRecipientAnswer`
 
-## Writes — paging / messaging
+## Writes — DataFeed bulk ingestion (~50 RPCs remaining)
 
-Beyond the wrapped `SendPage` / `ChangeStatus`:
+The full `DataFeed*` family for AMC/HR/AD-style bulk ingestion. Useful only if Spok is being treated as a *destination* (you're feeding records *into* Spok) — likely out of scope for most current consumers. `DataFeedAddPerson`/`DataFeedUpdatePerson` (and the unrelated `IudOrg`/`IudProfileSpecialty` IUD procs) are wrapped — see "Now wrapped" above.
 
-- `SendMessage`, `SubmitMessage`, `SendGroupPage`, `SendPageWithAlert`, `SendToSmartAlert`
-
-## Writes — DataFeed bulk ingestion (~50 RPCs)
-
-The full `DataFeed*` family for AMC/HR/AD-style bulk ingestion. Useful only if Spok is being treated as a *destination* (you're feeding records *into* Spok) — likely out of scope for most current consumers.
-
-- **People**: `DataFeedAddProfile*`, `DataFeedUpdateProfile*`, `DataFeedDeleteProfile*` for Email, Phone, Pager, Title, Building, Department, Address, Alias, Exception, Duplicate, Status (~40 procs across the matrix)
+- **People**: `DataFeedDeletePerson` (Add/Update are wrapped; Delete is not), plus `DataFeedAddProfile*`, `DataFeedUpdateProfile*`, `DataFeedDeleteProfile*` for Email, Phone, Pager, Title, Building, Department, Address, Alias, Exception, Duplicate, Status (~40 procs across the matrix)
 - **Functions**: `DataFeedAddFunction`, `DataFeedUpdateFunction`, `DataFeedDeleteFunction`
 - **OnCall groups**: `DataFeedAddOnCallGroup`, `DataFeedUpdateOnCallGroup`, `DataFeedDeleteOnCallGroup`
 - **Group assignments**: `DataFeedAddGroupAssignment`, `DataFeedUpdateGroupAssignment`, `DataFeedDeleteGroupAssignment`
