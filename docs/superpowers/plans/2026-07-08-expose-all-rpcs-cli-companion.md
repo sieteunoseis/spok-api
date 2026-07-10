@@ -232,7 +232,7 @@ Each task: for every RPC, add the write subcommand per **T2** (with `enforceRead
 
 ## Phase 3 — Paging methods (NO live calls)
 
-- [ ] **Task 19 — Paging family, param-wired only (5):** `SendMessage`, `SubmitMessage`, `SendGroupPage`, `SendPageWithAlert`, `SendToSmartAlert`. Add CLI subcommands under `send-page.js`/`send-message` per **T2** using exact XML params. Add tests as `it.skip` with comment `// intentionally never executed — would dispatch a real page`. Verify only via `npx tsc --noEmit` + `--help` output. Commit `feat(cli): wire paging methods (no live send)`.
+- [x] **Task 19 — Paging family, param-wired only (5):** `SendMessage`, `SubmitMessage`, `SendGroupPage`, `SendPageWithAlert`, `SendToSmartAlert`. Add CLI subcommands under `send-page.js`/`send-message` per **T2** using exact XML params. Add tests as `it.skip` with comment `// intentionally never executed — would dispatch a real page`. Verify only via `npx tsc --noEmit` + `--help` output. Commit `feat(cli): wire paging methods (no live send)`.
 
 ---
 
@@ -240,11 +240,11 @@ Each task: for every RPC, add the write subcommand per **T2** (with `enforceRead
 
 ### Task 20: Reconcile wrapper fixes, update docs, verify build
 **Files:** Modify `src/index.ts` (any remaining bug fixes), `docs/UNWRAPPED-RPCS.md` (mark wrapped), regenerate `dist/`.
-- [ ] **Step 1:** Ensure every param bug found in Phases 1–3 is fixed in `src/index.ts`; grep that CLI command params and `src/index.ts` `execute()` params agree per RPC.
-- [ ] **Step 2:** `npm run build` (or `npx tsc`); confirm `dist/index.js` regenerated.
-- [ ] **Step 3:** `npx tsc --noEmit` — clean (allow the known `moduleResolution` notice).
-- [ ] **Step 4:** `SPOK_LAB=1 node --test test/integration/` — full suite green (paging skipped).
-- [ ] **Step 5:** Commit `fix: reconcile RPC wrapper params with lab-verified CLI` + update `docs/UNWRAPPED-RPCS.md`.
+- [x] **Step 1:** Ensure every param bug found in Phases 1–3 is fixed in `src/index.ts`; grep that CLI command params and `src/index.ts` `execute()` params agree per RPC. Audited all 175 wrapped RPCs (explicit + passthrough) against `amcomapi.xml`; only gaps found were the two known ones below — no other param-name mismatches.
+- [x] **Step 2:** `npm run build` (or `npx tsc`); confirm `dist/index.js` regenerated.
+- [x] **Step 3:** `npx tsc --noEmit` — clean (allow the known `moduleResolution` notice).
+- [x] **Step 4:** `SPOK_LAB=1 node --test test/integration/**/*.test.js` — full suite green (paging skipped). 69 pass / 0 fail / 30 skipped with `--test-concurrency=1` (default concurrency races different write tests against each other on the shared live lab server — not a wrapper bug; see task-20 report).
+- [x] **Step 5:** Commit `fix: reconcile RPC wrapper params with lab-verified CLI` + update `docs/UNWRAPPED-RPCS.md`.
 
 ### Task 21: Merge PR #1 and publish v1.2.0
 - [ ] **Step 1:** Push branch `claude/open-rcps-docs-fkxcmb`; ensure PR #1 green.

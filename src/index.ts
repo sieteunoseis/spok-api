@@ -383,10 +383,18 @@ class SpokService {
     return this.execute("GetListingsByLastName", params);
   }
 
-  /** Get directories by UDF column with search type (CLOB output — bulk-safe). */
-  async getDirectoriesByUdf(udfCol: string, udf: string, searchType?: string): Promise<SpokResponse> {
+  /**
+   * Get directories by UDF column with search type (CLOB output — bulk-safe).
+   * @param lid optional — restrict search to a listing ID (amcomapi.xml `lid`, nullable="true").
+   * @param phtype optional — phone type filter (amcomapi.xml `phtype`, nullable="true").
+   */
+  async getDirectoriesByUdf(
+    udfCol: string, udf: string, searchType?: string, lid?: string, phtype?: string
+  ): Promise<SpokResponse> {
     const params: Record<string, string> = { udf_col: udfCol, udf };
     if (searchType) params.search_type = searchType;
+    if (lid) params.lid = lid;
+    if (phtype) params.phtype = phtype;
     return this.execute("GetDirectoriesByUdf", params);
   }
 
@@ -458,9 +466,20 @@ class SpokService {
     return this.execute("GetStatusCodes");
   }
 
-  /** Get paging info for a messaging ID. */
-  async getPagingInfo(mid: string): Promise<SpokResponse> {
-    return this.execute("GetPagingInfo", { mid });
+  /**
+   * Get paging info by name or messaging ID.
+   * All three params are optional per amcomapi.xml (`lname`, `fname`, `mid` all nullable="true");
+   * callers should supply at least one to get a useful result.
+   * @param mid optional — messaging ID.
+   * @param lname optional — last name.
+   * @param fname optional — first name.
+   */
+  async getPagingInfo(mid?: string, lname?: string, fname?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = {};
+    if (lname) params.lname = lname;
+    if (fname) params.fname = fname;
+    if (mid) params.mid = mid;
+    return this.execute("GetPagingInfo", params);
   }
 
   /** Get pager carrier/COS list. */
