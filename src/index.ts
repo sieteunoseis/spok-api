@@ -1067,9 +1067,14 @@ class SpokService {
     return this.execute("UpdateMessageGroup", params);
   }
 
-  /** Delete a message group by group number. */
-  async deleteMessageGroup(grpnum: string): Promise<SpokResponse> {
-    return this.execute("DeleteMessageGroup", { grpnum });
+  /**
+   * Delete a message group.
+   * @param reqlid required — the requesting listing ID (amcomapi.xml `nullable="false"`;
+   * the pre-existing wrapper was missing this param entirely).
+   * @param grpnum required — the group number to delete.
+   */
+  async deleteMessageGroup(reqlid: string, grpnum: string): Promise<SpokResponse> {
+    return this.execute("DeleteMessageGroup", { reqlid, grpnum });
   }
 
   /** Delete a member from a static message group. */

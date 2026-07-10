@@ -278,6 +278,29 @@ module.exports = function registerAddCommand(program) {
     });
 
   add
+    .command("message-group")
+    .description("Add a static message group")
+    .requiredOption("--reqlid <reqlid>", "requesting listing ID")
+    .option("--grpnum <grpnum>", "group number (optional per amcomapi.xml; omit to let the server assign one)")
+    .requiredOption("--gname <gname>", "group name")
+    .requiredOption("--acode <acode>", "alert code")
+    .option("--mprior <mprior>", "message priority")
+    .option("--remark <remark>", "remark")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { reqlid: opts.reqlid, gname: opts.gname, acode: opts.acode };
+        if (opts.grpnum) params.grpnum = opts.grpnum;
+        if (opts.mprior) params.mprior = opts.mprior;
+        if (opts.remark) params.remark = opts.remark;
+        const result = await callAmcom(globalOpts, "AddStaticMessageGroup", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
     .command("group-member")
     .description("Add a member to a static message group")
     .requiredOption("--reqlid <reqlid>", "requesting listing ID")

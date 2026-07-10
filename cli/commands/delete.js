@@ -128,6 +128,36 @@ module.exports = function registerDeleteCommand(program) {
     });
 
   del
+    .command("message-group <grpnum>")
+    .description("Delete a static message group")
+    .requiredOption("--reqlid <reqlid>", "requesting listing ID")
+    .action(async (grpnum, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeleteMessageGroup", { reqlid: opts.reqlid, grpnum });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
+    .command("message-group-member <grpnum> <mbrLid>")
+    .description("Delete a member from a static message group")
+    .requiredOption("--reqlid <reqlid>", "requesting listing ID")
+    .action(async (grpnum, mbrLid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeleteStaticMessageGroupMember", {
+          reqlid: opts.reqlid, grpnum, mbr_lid: mbrLid,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
     .command("work-hour <lid>")
     .description("Delete a single work hour entry by listing ID and sequence number")
     .requiredOption("--phrseq <phrseq>", "work hour sequence number (from `get work-hours`)")

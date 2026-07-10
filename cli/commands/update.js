@@ -185,6 +185,50 @@ module.exports = function registerUpdateCommand(program) {
     });
 
   update
+    .command("message-group <grpnum>")
+    .description("Update an existing static message group")
+    .requiredOption("--reqlid <reqlid>", "requesting listing ID")
+    .option("--olid <olid>", "new owner listing ID")
+    .option("--gname <gname>", "group name")
+    .option("--acode <acode>", "alert code")
+    .option("--mprior <mprior>", "message priority")
+    .option("--remark <remark>", "remark")
+    .action(async (grpnum, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { reqlid: opts.reqlid, grpnum };
+        if (opts.olid) params.olid = opts.olid;
+        if (opts.gname) params.gname = opts.gname;
+        if (opts.acode) params.acode = opts.acode;
+        if (opts.mprior) params.mprior = opts.mprior;
+        if (opts.remark) params.remark = opts.remark;
+        const result = await callAmcom(globalOpts, "UpdateMessageGroup", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
+    .command("message-group-member <grpnum> <mbrLid>")
+    .description("Update a member of a static message group")
+    .requiredOption("--reqlid <reqlid>", "requesting listing ID")
+    .option("--dorder <dorder>", "display order")
+    .option("--remark <remark>", "remark")
+    .action(async (grpnum, mbrLid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { reqlid: opts.reqlid, grpnum, mbr_lid: mbrLid };
+        if (opts.dorder) params.dorder = opts.dorder;
+        if (opts.remark) params.remark = opts.remark;
+        const result = await callAmcom(globalOpts, "UpdateStaticMessageGroupMember", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
     .command("work-hour <lid>")
     .description("Update an existing work hour entry")
     .requiredOption("--phrseq <phrseq>", "work hour sequence number (from `get work-hours`)")
