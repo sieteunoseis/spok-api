@@ -347,6 +347,46 @@ module.exports = function registerAddCommand(program) {
     });
 
   add
+    .command("instruction")
+    .description("Add a listing instruction and assign it to the specified user")
+    .option("--mid <mid>", "messaging ID (mid or lid identifies the target)")
+    .option("--lid <lid>", "listing ID (mid or lid identifies the target)")
+    .option("--iname <iname>", "instruction name")
+    .option("--itype <itype>", "instruction type")
+    .requiredOption("--itext <itext>", "instruction text")
+    .option("--sdate <sdate>", "start date")
+    .option("--edate <edate>", "end date")
+    .option("--iorder <iorder>", "instruction display order")
+    .action(async (opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = buildParams(opts);
+        const result = await callAmcom(globalOpts, "AddListingInstruction", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
+    .command("instruction-share <seqnum> <lid>")
+    .description("Share an existing listing instruction with another listing")
+    .option("--mid <mid>", "messaging ID of the target (alternative to lid)")
+    .option("--iorder <iorder>", "instruction display order")
+    .action(async (seqnum, lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { seqnum, lid };
+        if (opts.mid) params.mid = opts.mid;
+        if (opts.iorder) params.iorder = opts.iorder;
+        const result = await callAmcom(globalOpts, "ShareListingInstruction", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
     .command("work-hour")
     .description("Add a work hour entry to a listing")
     .requiredOption("--lid <lid>", "listing ID")

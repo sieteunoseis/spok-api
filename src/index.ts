@@ -891,9 +891,12 @@ class SpokService {
   /**
    * Share a listing instruction with another listing.
    * @param seqnum required — the instruction sequence number (the family uses seqnum, not instrseq).
+   * @param targetLid required — the listing ID to share the instruction to (per amcomapi.xml
+   *   the wire param is `lid`, same name as the owning-listing param used elsewhere in this
+   *   family; here it identifies the *target* of the share).
    */
   async shareListingInstruction(seqnum: string, targetLid: string): Promise<SpokResponse> {
-    return this.execute("ShareListingInstruction", { seqnum, target_lid: targetLid });
+    return this.execute("ShareListingInstruction", { seqnum, lid: targetLid });
   }
 
   /** Change an on-call exception. */

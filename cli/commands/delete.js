@@ -205,6 +205,22 @@ module.exports = function registerDeleteCommand(program) {
     });
 
   del
+    .command("instruction <seqnum>")
+    .description("Delete a listing instruction assigned to the specified listing")
+    .requiredOption("--lid <lid>", "listing ID the instruction is assigned to")
+    .action(async (seqnum, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeleteListingInstruction", {
+          seqnum, lid: opts.lid,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
     .command("work-hour <lid>")
     .description("Delete a single work hour entry by listing ID and sequence number")
     .requiredOption("--phrseq <phrseq>", "work hour sequence number (from `get work-hours`)")

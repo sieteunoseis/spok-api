@@ -282,6 +282,29 @@ module.exports = function registerUpdateCommand(program) {
     });
 
   update
+    .command("instruction <seqnum>")
+    .description("Update an existing listing instruction")
+    .option("--mid <mid>", "messaging ID (mid or lid identifies the target)")
+    .option("--lid <lid>", "listing ID (mid or lid identifies the target)")
+    .option("--iname <iname>", "instruction name")
+    .option("--itype <itype>", "instruction type")
+    .requiredOption("--itext <itext>", "instruction text")
+    .option("--sdate <sdate>", "start date")
+    .option("--edate <edate>", "end date")
+    .option("--iorder <iorder>", "instruction display order")
+    .action(async (seqnum, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = buildParams(opts);
+        params.seqnum = seqnum;
+        const result = await callAmcom(globalOpts, "UpdateListingInstruction", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
     .command("work-hour <lid>")
     .description("Update an existing work hour entry")
     .requiredOption("--phrseq <phrseq>", "work hour sequence number (from `get work-hours`)")
