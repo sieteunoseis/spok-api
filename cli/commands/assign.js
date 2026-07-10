@@ -57,4 +57,52 @@ module.exports = function registerAssignCommand(program) {
         await printResult(output, globalOpts.format);
       } catch (err) { printError(err); }
     });
+
+  assign
+    .command("role <lid>")
+    .description("Assign a role to a listing")
+    .requiredOption("--role <role>", "role name")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "AssignRole", { lid, role: opts.role });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  assign
+    .command("message-priorities <lid>")
+    .description("Assign the min/max message priority range to a listing")
+    .requiredOption("--min-mprior <minMprior>", "minimum message priority")
+    .requiredOption("--max-mprior <maxMprior>", "maximum message priority")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "AssignMessagePriorities", {
+          lid, min_mprior: opts.minMprior, max_mprior: opts.maxMprior,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  assign
+    .command("group-limits <lid>")
+    .description("Assign message-group limits to a listing")
+    .requiredOption("--max-mgroups <maxMgroups>", "maximum number of message groups")
+    .requiredOption("--max-mgroup-mbrs <maxMgroupMbrs>", "maximum number of members per message group")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "AssignGroupLimits", {
+          lid, max_mgroups: opts.maxMgroups, max_mgroup_mbrs: opts.maxMgroupMbrs,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
 };

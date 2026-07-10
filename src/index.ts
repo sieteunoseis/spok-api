@@ -799,9 +799,9 @@ class SpokService {
     return this.execute("DeletePerson", { lid });
   }
 
-  /** Enable or disable a listing. */
-  async setListingEnabled(lid: string, eflag: string): Promise<SpokResponse> {
-    return this.execute("SetListingEnabled", { lid, eflag });
+  /** Enable or disable a listing for a given module. */
+  async setListingEnabled(lid: string, module: string, eflag: string): Promise<SpokResponse> {
+    return this.execute("SetListingEnabled", { lid, module, eflag });
   }
 
   /** Update the messaging ID on a listing. */

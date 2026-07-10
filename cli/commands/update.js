@@ -53,6 +53,22 @@ module.exports = function registerUpdateCommand(program) {
     });
 
   update
+    .command("messaging-id <lid>")
+    .description("Update (or clear) the messaging ID on a listing")
+    .option("--mid <mid>", "new messaging ID (omit to clear)")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { lid };
+        if (opts.mid !== undefined) params.mid = opts.mid;
+        const result = await callAmcom(globalOpts, "UpdateMessagingId", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
     .command("org <orgseq>")
     .description("Update an existing organization")
     .option("--orgname <orgname>", "organization name")

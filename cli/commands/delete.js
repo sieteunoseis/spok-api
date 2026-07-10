@@ -23,6 +23,19 @@ module.exports = function registerDeleteCommand(program) {
     });
 
   del
+    .command("person <lid>")
+    .description("Delete a person listing by listing ID")
+    .action(async (lid) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeletePerson", { lid });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
     .command("org <orgseq>")
     .description("Delete an organization by sequence number")
     .action(async (orgseq) => {

@@ -62,4 +62,21 @@ module.exports = function registerSetCommand(program) {
         await printResult(output, globalOpts.format);
       } catch (err) { printError(err); }
     });
+
+  set
+    .command("listing-enabled <lid>")
+    .description("Set listing enabled flag for a module")
+    .requiredOption("--module <module>", "module name (e.g. \"SMART CONSOLE\")")
+    .requiredOption("--flag <flag>", "enabled flag: T or F")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "SetListingEnabled", {
+          lid, module: opts.module, eflag: opts.flag,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
 };
