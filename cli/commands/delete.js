@@ -246,4 +246,56 @@ module.exports = function registerDeleteCommand(program) {
         await printResult(output, globalOpts.format);
       } catch (err) { printError(err); }
     });
+
+  del
+    .command("personal-contact-device <pdoseq>")
+    .description("Delete a personal contact device by sequence number")
+    .action(async (pdoseq) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeletePersonalContactDevice", { pdoseq });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
+    .command("personal-contact-devices <lid>")
+    .description("Delete all personal contact device options for a listing")
+    .action(async (lid) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeleteAllPersonalDeviceOptions", { lid });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
+    .command("contact-devices <lid>")
+    .description("Unassign all contact devices from a listing")
+    .action(async (lid) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "UnassignContactDevices", { lid });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  del
+    .command("exception <mid> <exseq>")
+    .description("Delete an exception by messaging ID and exception sequence number")
+    .action(async (mid, exseq) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "DeleteException", { mid, exseq });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
 };

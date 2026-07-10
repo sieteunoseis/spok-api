@@ -387,6 +387,31 @@ module.exports = function registerAddCommand(program) {
     });
 
   add
+    .command("personal-contact-device <lid>")
+    .description("Add a personal contact device to a listing")
+    .requiredOption("--cltype <cltype>", "contact list type (e.g. \"ON HOURS\" or \"OFF HOURS\")")
+    .requiredOption("--devtype <devtype>", "device type: EMAIL, PAGER, or PHONE")
+    .requiredOption(
+      "--devid <devid>",
+      "device identifier — for EMAIL: the listing's existing email address; " +
+        "for PHONE: the directory seqnum from `get unassigned-contact-devices` " +
+        "(NOT the raw phone number); for PAGER: the pager ID. The device must " +
+        "already exist on the listing (added via add email/phone-number/assign pager first)."
+    )
+    .option("--dorder <dorder>", "display order")
+    .action(async (lid, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const params = { lid, cltype: opts.cltype, devtype: opts.devtype, devid: opts.devid };
+        if (opts.dorder) params.dorder = opts.dorder;
+        const result = await callAmcom(globalOpts, "AddPersonalContactDevice", params);
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  add
     .command("work-hour")
     .description("Add a work hour entry to a listing")
     .requiredOption("--lid <lid>", "listing ID")

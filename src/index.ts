@@ -899,22 +899,29 @@ class SpokService {
     return this.execute("ShareListingInstruction", { seqnum, lid: targetLid });
   }
 
-  /** Change an on-call exception. */
+  /** Change (or create) an exception. */
   async changeException(params: Record<string, string>): Promise<SpokResponse> {
     return this.execute("ChangeException", params);
   }
 
-  /** Delete an on-call exception by sequence number. */
-  async deleteException(excpseq: string): Promise<SpokResponse> {
-    return this.execute("DeleteException", { excpseq });
+  /**
+   * Delete an exception.
+   * @param mid required — messaging ID that owns the exception.
+   * @param exseq required — the exception sequence number to delete.
+   */
+  async deleteException(mid: string, exseq: string): Promise<SpokResponse> {
+    return this.execute("DeleteException", { mid, exseq });
   }
 
-  /** Add a personal contact device. */
+  /**
+   * Add a personal contact device.
+   * Required params per amcomapi.xml: lid, cltype, devtype, devid. Optional: dorder.
+   */
   async addPersonalContactDevice(params: Record<string, string>): Promise<SpokResponse> {
     return this.execute("AddPersonalContactDevice", params);
   }
 
-  /** Update a personal contact device. */
+  /** Update a personal contact device (pdoseq, dorder — both required). */
   async updatePersonalContactDevice(params: Record<string, string>): Promise<SpokResponse> {
     return this.execute("UpdatePersonalContactDevice", params);
   }
@@ -927,19 +934,27 @@ class SpokService {
     return this.execute("DeletePersonalContactDevice", { pdoseq });
   }
 
-  /** Delete all personal device options for a messaging ID. */
-  async deleteAllPersonalDeviceOptions(mid: string): Promise<SpokResponse> {
-    return this.execute("DeleteAllPersonalDeviceOptions", { mid });
+  /**
+   * Delete all personal device options for a listing.
+   * @param lid required — per amcomapi.xml the wire param is `lid`, not `mid`
+   *   (live-verified: sending `mid` returns "request does not contain parameter lid").
+   */
+  async deleteAllPersonalDeviceOptions(lid: string): Promise<SpokResponse> {
+    return this.execute("DeleteAllPersonalDeviceOptions", { lid });
   }
 
-  /** Swap two personal contact devices. */
+  /** Swap the display order of two personal contact devices (pdoseq, dorder — both required). */
   async swapPersonalContactDevice(params: Record<string, string>): Promise<SpokResponse> {
     return this.execute("SwapPersonalContactDevice", params);
   }
 
-  /** Unassign all contact devices from a messaging ID. */
-  async unassignContactDevices(mid: string): Promise<SpokResponse> {
-    return this.execute("UnassignContactDevices", { mid });
+  /**
+   * Unassign all contact devices from a listing.
+   * @param lid required — per amcomapi.xml the wire param is `lid`, not `mid`
+   *   (live-verified: sending `mid` returns "request does not contain parameter lid").
+   */
+  async unassignContactDevices(lid: string): Promise<SpokResponse> {
+    return this.execute("UnassignContactDevices", { lid });
   }
 
   /** Register an AMC device. */

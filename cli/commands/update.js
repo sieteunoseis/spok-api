@@ -305,6 +305,22 @@ module.exports = function registerUpdateCommand(program) {
     });
 
   update
+    .command("personal-contact-device <pdoseq>")
+    .description("Update a personal contact device's display order")
+    .requiredOption("--dorder <dorder>", "new display order")
+    .action(async (pdoseq, opts) => {
+      const globalOpts = program.opts();
+      try {
+        enforceReadOnly(globalOpts);
+        const result = await callAmcom(globalOpts, "UpdatePersonalContactDevice", {
+          pdoseq, dorder: opts.dorder,
+        });
+        const output = globalOpts.clean ? cleanObject(result) : result;
+        await printResult(output, globalOpts.format);
+      } catch (err) { printError(err); }
+    });
+
+  update
     .command("work-hour <lid>")
     .description("Update an existing work hour entry")
     .requiredOption("--phrseq <phrseq>", "work hour sequence number (from `get work-hours`)")
