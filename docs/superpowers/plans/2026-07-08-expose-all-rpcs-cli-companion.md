@@ -247,10 +247,10 @@ Each task: for every RPC, add the write subcommand per **T2** (with `enforceRead
 - [x] **Step 5:** Commit `fix: reconcile RPC wrapper params with lab-verified CLI` + update `docs/UNWRAPPED-RPCS.md`.
 
 ### Task 21: Merge PR #1 and publish v1.2.0
-- [ ] **Step 1:** Push branch `claude/open-rcps-docs-fkxcmb`; ensure PR #1 green.
-- [ ] **Step 2:** Merge PR #1 to `main` (`gh pr merge 1 --squash` or per user preference).
-- [ ] **Step 3:** On `main`, confirm `package.json` = `1.2.0`; `git tag v1.2.0 && git push origin v1.2.0`.
-- [ ] **Step 4:** Watch the release workflow: `gh run watch` — confirm npm publish of `spok-api@1.2.0` (`npm view spok-api version` → `1.2.0`).
+- [x] **Step 1:** Push branch `claude/open-rcps-docs-fkxcmb`; ensure PR #1 green.
+- [x] **Step 2:** Merge PR #1 to `main` (`gh pr merge 1 --squash` or per user preference).
+- [x] **Step 3:** On `main`, confirm `package.json` = `1.2.0`; `git tag v1.2.0 && git push origin v1.2.0`.
+- [x] **Step 4:** Watch the release workflow: `gh run watch` — confirm npm publish of `spok-api@1.2.0` (`npm view spok-api version` → `1.2.0`).
 
 ---
 

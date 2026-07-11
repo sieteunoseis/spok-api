@@ -69,65 +69,132 @@ Config stored at `~/.spok-api/config.json` (falls back to `~/.spok-cli/config.js
 
 ## CLI Commands
 
-| Command                             | Description                                                                               |
-| ----------------------------------- | ----------------------------------------------------------------------------------------- |
-| `get <subcommand>`                  | Query listings, pagers, email, directories, on-call, exceptions, coverage, reference data |
-| `send-page <mid> <text>`            | Send a page to a messaging ID                                                             |
-| `change-status <mid> <code> <text>` | Change a listing's status                                                                 |
-| `add <subcommand>`                  | Add persons, pagers, email, directories, group members                                    |
-| `update <subcommand>`               | Update persons, directories                                                               |
-| `delete <subcommand>`               | Delete pagers, directories                                                                |
-| `assign <subcommand>`               | Assign pagers, messaging IDs, email                                                       |
-| `set <subcommand>`                  | Set directory flags (enabled, published, transfer-allowed)                                |
-| `datafeed <subcommand>`             | Data feed add/update person                                                               |
-| `config <subcommand>`               | Manage server configuration                                                               |
+The CLI wraps the Amcom Smart Suite TCP API comprehensively — around 200 subcommands across 10 top-level verbs, covering reads and writes for listings, pagers, email, phone, directories, departments, addresses, organizations, on-call, work hours, message groups, instructions, status, exceptions, events/notifications, monitoring, and contact devices, plus live paging.
+
+| Command                                                                                                                    | Description                                                                                                                                                     |
+| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get <subcommand>`                                                                                                         | Read data — listings, pagers, email/phone, directories, on-call, exceptions/coverage, status, instructions, events/notifications, monitoring, reference data (~100 subcommands) |
+| `add <subcommand>`                                                                                                         | Create records — persons, pagers, email, directories, orgs, addresses, on-call groups/members/roles, message groups, instructions, contact devices, work hours |
+| `update <subcommand>`                                                                                                      | Update records — persons, pagers, orgs, addresses, directories, on-call groups/assignments, message groups, instructions, contact devices, work hours          |
+| `delete <subcommand>`                                                                                                      | Delete records — pagers, persons, orgs, addresses, directories, on-call groups/assignments, message groups, instructions, work hours, contact devices, exceptions |
+| `assign <subcommand>`                                                                                                      | Assign pagers, messaging IDs, email, roles, message priorities, group limits                                                                                    |
+| `set <subcommand>`                                                                                                         | Set directory/listing flags (enabled, published, transfer-allowed)                                                                                              |
+| `datafeed <subcommand>`                                                                                                    | HR data feed add/update for persons, orgs, specialties                                                                                                          |
+| `config <subcommand>`                                                                                                      | Manage server configuration                                                                                                                                     |
+| `send-page`, `send-message`, `submit-message`, `send-group-page`, `send-page-with-alert`, `send-to-smart-alert`           | Top-level paging/messaging commands (each takes its own positional args, not nested under a verb)                                                              |
+| `change-status`, `change-exception`, `swap-personal-contact-device`, `register-amc-device`, `unregister-amc-device`       | Top-level status/exception/contact-device commands                                                                                                              |
+
+`get`, `add`, `update`, `delete`, `assign`, `set`, `datafeed`, and `config` are verb groups — run e.g. `spok-api get --help` or `spok-api add --help` for their full subcommand list. The paging and status/exception commands above are standalone (run `spok-api --help` to see them all).
 
 ### Get subcommands
 
+Representative examples by domain — run `spok-api get --help` for all ~100:
+
 ```bash
+# Listings
 spok-api get listing <mid>              # listing by messaging ID
 spok-api get listing-by-name <name>     # search by name (--search-type, --midflag)
 spok-api get listing-by-eid <eid>       # listing by employee ID
 spok-api get listing-by-lid <lid>       # listing by listing ID
+
+# Pagers & contact devices
 spok-api get pager <mid>                # pager IDs for a user
 spok-api get pager-info <pid>           # full pager details
-spok-api get pager-by-mid <mid>         # pager info by messaging ID
+spok-api get assigned-contact-devices <lid>
+spok-api get unassigned-contact-devices <lid>
+
+# Email / phone / SSO
 spok-api get email <mid>                # email address
+spok-api get phone-number <mid>         # phone number
 spok-api get sso <mid>                  # SSO username
 spok-api get mid <ssoUsername>          # messaging ID by SSO username
+
+# Directories & departments
 spok-api get directory <lid>            # directory tree (--phtype filter)
 spok-api get directory-info <dirseq>    # single directory entry
-spok-api get group-members <grpnum>     # group members (--reqlid required)
+spok-api get departments                # all departments
+spok-api get department-hierarchy <dirseq>
+
+# On-call, exceptions & coverage
 spok-api get oncall-current <group_mid> # current on-call assignments
 spok-api get oncall-all <group_mid>     # all on-call assignments
-spok-api get oncall-by-id <mid>         # on-call by messaging ID
-spok-api get exception <mid>            # current exception
 spok-api get exceptions <mid>           # all exceptions
 spok-api get coverage <mid>             # coverage path
 spok-api get final-covering <mid>       # final covering ID
-spok-api get final-person <mid>         # final covering person
+
+# Status
+spok-api get status <mid>               # current status
+spok-api get status-codes               # all status codes
+
+# Instructions, events & monitoring
+spok-api get listing-instructions <lid>
+spok-api get event-templates <reqlid>
+spok-api get monitor-event-status-summary
+
+# Reference data
 spok-api get org-codes                  # all organization codes
 spok-api get phone-types                # all phone types
 spok-api get buildings                  # all buildings
 spok-api get titles                     # all titles
+spok-api get pager-models               # pager model catalog
 ```
 
 ### Write operations
 
-Write commands are blocked when `--read-only` is set or the server config has `readOnly: true`.
+Write commands are blocked when `--read-only` is set or the server config has `readOnly: true`. Representative examples — run `spok-api add --help`, `spok-api update --help`, `spok-api delete --help`, `spok-api assign --help`, `spok-api set --help` for the full list:
 
 ```bash
+# Paging & status
 spok-api send-page 12766 "Please call ext 4-8311" --priority 1
+spok-api send-group-page 50 "Team meeting at 3pm" --priority 1
 spok-api change-status 12766 2 "AVAILABLE AT OHSU"
+spok-api change-exception 12766 1 "Out sick" "back tomorrow"
+
+# Persons, pagers, email
 spok-api add person --lname Smith --fname John --eid 12345
 spok-api add pager --pid 5035551234 --cos LONG_RANGE --model USMO-T5
 spok-api add email --mid 12766 --email user@example.com --display-order 1
-spok-api assign pager --mid 12766 --pager-id 5035551234 --display-order 101
 spok-api update person 308787 --fname Jonathan
 spok-api delete pager 5035551234
+
+# Assignment
+spok-api assign pager --mid 12766 --pager-id 5035551234 --display-order 101
+spok-api assign messaging-id 308787
+
+# Directories, orgs, addresses
+spok-api add directory --lid 308787 --phnum 5035551234 --phtype OFFICE
+spok-api update org 4001 --orgname "Cardiology"
+spok-api add address --addr1 "3181 SW Sam Jackson Park Rd" --city Portland --state OR --pcode 97239
 spok-api set directory-enabled --dirseq 7056555 --module SC --flag T
+
+# On-call, message groups, work hours, instructions
+spok-api add oncall-group --oncall-mid 18427 --name "Cardiology On-Call"
+spok-api update oncall-assignment 55001 --start-date "01-JAN-27 00:00:00"
+spok-api add message-group --reqlid 308787 --gname "IT Alerts" --acode 1
+spok-api add work-hour --lid 308787 --cltype "ON HOURS" --stime "08:00 AM" --etime "05:00 PM" --wdays "MON,TUE,WED"
+spok-api add instruction --lid 308787 --itext "Page for STAT only"
+spok-api delete exception 12766 1
+
+# Contact devices
+spok-api add personal-contact-device 308787 --cltype "ON HOURS" --devtype PAGER --devid 5035551234
+spok-api register-amc-device 12766 5035551234 user@example.com
+
+# Data feed
 spok-api datafeed add-person --unique-id 12345 --last-name Smith --source HR_FEED
 ```
+
+## Testing
+
+A lab-gated integration suite lives under `test/integration/` and runs against a real Spok server:
+
+```bash
+SPOK_LAB=1 node --test --test-concurrency=1 test/integration/**/*.test.js
+```
+
+- Without `SPOK_LAB=1`, live tests are skipped (safe to run in CI/normal dev).
+- **Reads** are live-verified against the configured lab server.
+- **Writes** follow a create → verify → delete-own pattern: each test creates a throwaway record, confirms it via a read, then deletes only the record it created — never touching existing data.
+- **Paging** is fully wired (library method + CLI command + integration test), but the send-oriented RPCs (`SendMessage`, `SubmitMessage`, `SendGroupPage`, `SendPageWithAlert`, `SendToSmartAlert`) are `test.skip`'d and never auto-fired, per a standing "no live page/notification sends from automation" constraint.
 
 ## Global Flags
 
