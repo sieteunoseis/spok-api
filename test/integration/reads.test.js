@@ -764,3 +764,14 @@ test.skip(
   "GetProfileSpecialties: no ir_fid in lab data resolves to a listing (tried 12 real ids spanning lid/mid/eid across all Task fixtures; server consistently returns a clean 'No listing record was found that matches that feed id' business error, confirming ir_fid is a distinct, undiscoverable id space, same as GetStatusesByFeedId's fid in Task 5)",
   () => {}
 );
+
+// GetListingsByFeedId: no discoverable positive fid fixture in lab data (same
+// undiscoverable feed-id space as GetStatusesByFeedId). Wiring is proven by the
+// specific "Feed id" business error (not a param/validation error), confirming
+// the `fid` param is accepted and evaluated by the server.
+itLab("GetListingsByFeedId is wired correctly (fid evaluated, clean not-found)", async () => {
+  const res = await lab().execute("GetListingsByFeedId", { fid: "ZZ-APITEST-NO-SUCH-FID" });
+  assert.ok(res.error, "expected a clean not-found business error, got none");
+  assert.ok(String(res.error).includes("Feed id"), `unexpected error: ${res.error}`);
+  assert.strictEqual(res.errorCode, "-1");
+});

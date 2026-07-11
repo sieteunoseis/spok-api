@@ -111,6 +111,13 @@ class SpokService {
     return this.execute("GetListingsByUdf", params);
   }
 
+  /** Get listings by data-feed ID. */
+  async getListingsByFeedId(fid: string, midFlag?: string): Promise<SpokResponse> {
+    const params: Record<string, string> = { fid };
+    if (midFlag) params.mid_flag = midFlag;
+    return this.execute("GetListingsByFeedId", params);
+  }
+
   // ─── SSO / Messaging ID ───────────────────────────────────────────────────
 
   /** Get SSO username by messaging ID. */

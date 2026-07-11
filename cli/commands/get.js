@@ -85,6 +85,18 @@ module.exports = function registerGetCommand(program) {
     });
 
   get
+    .command("listing-by-fid <fid>")
+    .description("Get listings by data-feed ID")
+    .option("--midflag <flag>", "WITH, WITHOUT, or ALL")
+    .action(async (fid, opts) => {
+      try {
+        const params = { fid };
+        if (opts.midflag) params.mid_flag = opts.midflag.toUpperCase();
+        await callAndPrint(program.opts(), "GetListingsByFeedId", params);
+      } catch (err) { printError(err); }
+    });
+
+  get
     .command("listing-by-udf <udf>")
     .description("Get listings by user-defined field")
     .requiredOption("--udf-col <col>", "user-defined field column number (1-6)")
